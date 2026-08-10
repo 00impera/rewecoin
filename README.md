@@ -1,0 +1,2 @@
+# rewecoin
+rewecoin
