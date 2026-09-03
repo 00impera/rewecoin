@@ -23,13 +23,33 @@ contract SwapContract is Ownable {
     event SwapReweToUSD(address indexed user, uint256 reweAmount, uint256 usdAmount);
     event SwapUSDToRewe(address indexed user, uint256 usdAmount, uint256 reweAmount);
 
+    // ---------------------------------------------------------
+    // PRICE / CANDLE TRACKING
+    // Aceste eventuri sunt input-ul brut pentru indexer-ul off-chain
+    // care construiește candle-urile OHLC pentru prețul REWE.
+    // ---------------------------------------------------------
+    event SwapExecuted(
+        address indexed trader,
+        bool reweIn,           // true = user a dat REWE, false = user a dat USD
+        uint256 amountIn,
+        uint256 amountOut,
+        uint256 priceAtSwap,   // preț REWE/USD la momentul swap-ului, scalat cu 1e18
+        uint256 timestamp
+    );
+
+    event RateUpdated(
+        uint256 reweToUsdRate,
+        uint256 usdToReweRate,
+        uint256 timestamp
+    );
+
     constructor(
         address _access,
         address _rewe,
         address _playerData,
         address _usdc,
         address _usdt
-    ) {
+    ) Ownable(msg.sender) {
         access = SystemAccess(_access);
         rewe = ReweCoinToken(_rewe);
         playerData = PlayerData(_playerData);
@@ -62,6 +82,14 @@ contract SwapContract is Ownable {
         playerData.addUsd(msg.sender, usdAmount);
 
         emit SwapReweToUSD(msg.sender, reweAmount, usdAmount);
+        emit SwapExecuted(
+            msg.sender,
+            true,
+            reweAmount,
+            usdAmount,
+            (usdAmount * 1e18) / reweAmount,
+            block.timestamp
+        );
     }
 
     // ---------------------------------------------------------
@@ -80,6 +108,14 @@ contract SwapContract is Ownable {
         playerData.addUsd(msg.sender, usdAmount);
 
         emit SwapReweToUSD(msg.sender, reweAmount, usdAmount);
+        emit SwapExecuted(
+            msg.sender,
+            true,
+            reweAmount,
+            usdAmount,
+            (usdAmount * 1e18) / reweAmount,
+            block.timestamp
+        );
     }
 
     // ---------------------------------------------------------
@@ -101,6 +137,14 @@ contract SwapContract is Ownable {
         playerData.addUsd(msg.sender, usdAmount);
 
         emit SwapReweToUSD(msg.sender, reweAmount, usdAmount);
+        emit SwapExecuted(
+            msg.sender,
+            true,
+            reweAmount,
+            usdAmount,
+            (usdAmount * 1e18) / reweAmount,
+            block.timestamp
+        );
     }
 
     // ---------------------------------------------------------
@@ -119,6 +163,14 @@ contract SwapContract is Ownable {
         playerData.addRewe(msg.sender, reweAmount);
 
         emit SwapUSDToRewe(msg.sender, usdAmount, reweAmount);
+        emit SwapExecuted(
+            msg.sender,
+            false,
+            usdAmount,
+            reweAmount,
+            (usdAmount * 1e18) / reweAmount,
+            block.timestamp
+        );
     }
 
     // ---------------------------------------------------------
@@ -137,6 +189,14 @@ contract SwapContract is Ownable {
         playerData.addRewe(msg.sender, reweAmount);
 
         emit SwapUSDToRewe(msg.sender, usdAmount, reweAmount);
+        emit SwapExecuted(
+            msg.sender,
+            false,
+            usdAmount,
+            reweAmount,
+            (usdAmount * 1e18) / reweAmount,
+            block.timestamp
+        );
     }
 
     // ---------------------------------------------------------
@@ -145,6 +205,7 @@ contract SwapContract is Ownable {
     function updateRates(uint256 _reweToUsd, uint256 _usdToRewe) external onlyOwner {
         reweToUsdRate = _reweToUsd;
         usdToReweRate = _usdToRewe;
+        emit RateUpdated(_reweToUsd, _usdToRewe, block.timestamp);
     }
 
     function updateAccess(address newAccess) external onlyOwner {
