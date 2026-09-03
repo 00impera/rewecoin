@@ -68,17 +68,13 @@ contract SwapContract is Ownable {
     function swapReweToUSDC(uint256 reweAmount) external {
         require(reweAmount > 0, "Invalid amount");
 
-        // burn REWE from user
         rewe.burn(msg.sender, reweAmount);
 
-        // convert REWE → USD
         uint256 usdAmount = reweAmount / reweToUsdRate;
 
-        // send USDC to user
         usdc.transfer(msg.sender, usdAmount);
 
-        // update PlayerData
-        playerData.addRewe(msg.sender, 0 - reweAmount);
+        playerData.subRewe(msg.sender, reweAmount);
         playerData.addUsd(msg.sender, usdAmount);
 
         emit SwapReweToUSD(msg.sender, reweAmount, usdAmount);
@@ -104,7 +100,7 @@ contract SwapContract is Ownable {
 
         usdt.transfer(msg.sender, usdAmount);
 
-        playerData.addRewe(msg.sender, 0 - reweAmount);
+        playerData.subRewe(msg.sender, reweAmount);
         playerData.addUsd(msg.sender, usdAmount);
 
         emit SwapReweToUSD(msg.sender, reweAmount, usdAmount);
@@ -133,7 +129,7 @@ contract SwapContract is Ownable {
 
         payable(msg.sender).transfer(ethAmount);
 
-        playerData.addRewe(msg.sender, 0 - reweAmount);
+        playerData.subRewe(msg.sender, reweAmount);
         playerData.addUsd(msg.sender, usdAmount);
 
         emit SwapReweToUSD(msg.sender, reweAmount, usdAmount);
