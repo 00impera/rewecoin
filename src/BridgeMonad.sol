@@ -1,103 +1,67 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
+import { OApp, Origin, MessagingFee } from "@layerzerolabs/oapp-evm/contracts/oapp/OApp.sol";
 import "./SystemAccess.sol";
 import "./ReweCoinToken.sol";
 
-interface ILayerZeroEndpointV2 {
-    function send(
-        uint32 dstEid,
-        bytes calldata message,
-        bytes calldata options,
-        address refundAddress
-    ) external payable;
-}
-
-contract BridgeMonad is Ownable {
-
+contract BridgeMonad is OApp {
     SystemAccess public access;
     ReweCoinToken public rewe;
 
-    ILayerZeroEndpointV2 public endpoint;
-
-    uint32 public monadEid = 30132;     // example EID for Monad
-    uint32 public ethereumEid = 30101;  // example EID for Ethereum
-
-    event BridgeSend(address indexed user, uint256 amount, uint32 dstChain);
-    event BridgeReceive(address indexed user, uint256 amount, uint32 srcChain);
+    event BridgeSend(address indexed user, uint256 amount, uint32 dstEid);
+    event BridgeReceive(address indexed user, uint256 amount, uint32 srcEid);
+    event WithdrawNative(address indexed to, uint256 amount);
 
     constructor(
+        address _endpoint,
+        address _owner,
         address _access,
-        address _rewe,
-        address _endpoint
-    ) {
+        address _rewe
+    ) OApp(_endpoint, _owner) Ownable(_owner) {
         access = SystemAccess(_access);
         rewe = ReweCoinToken(_rewe);
-        endpoint = ILayerZeroEndpointV2(_endpoint);
     }
 
-    modifier onlySystem() {
-        require(access.isSystem(msg.sender), "Not system");
-        _;
+    function quoteBridge(
+        uint32 dstEid,
+        address user,
+        uint256 amount,
+        bytes calldata options
+    ) external view returns (MessagingFee memory fee) {
+        bytes memory payload = abi.encode(user, amount);
+        fee = _quote(dstEid, payload, options, false);
     }
 
-    // ---------------------------------------------------------
-    // SEND REWE TO ANOTHER CHAIN
-    // ---------------------------------------------------------
-    function bridgeToChain(uint32 dstChain, uint256 amount) external payable {
+    function bridgeToChain(uint32 dstEid, uint256 amount, bytes calldata options) external payable {
         require(amount > 0, "Invalid amount");
-
-        // burn REWE on source chain
         rewe.burn(msg.sender, amount);
-
-        // encode message
-        bytes memory message = abi.encode(msg.sender, amount);
-
-        // send via LayerZero
-        endpoint.send(
-            dstChain,
-            message,
-            bytes(""),       // default options
-            msg.sender       // refund address
-        );
-
-        emit BridgeSend(msg.sender, amount, dstChain);
+        bytes memory payload = abi.encode(msg.sender, amount);
+        _lzSend(dstEid, payload, options, MessagingFee(msg.value, 0), payable(msg.sender));
+        emit BridgeSend(msg.sender, amount, dstEid);
     }
 
-    // ---------------------------------------------------------
-    // RECEIVE REWE FROM ANOTHER CHAIN
-    // CALLED BY LAYERZERO EXECUTOR
-    // ---------------------------------------------------------
-    function lzReceive(
-        bytes calldata message,
-        uint32 srcChain,
-        address /*executor*/,
-        bytes calldata /*extraData*/
-    ) external {
-        require(msg.sender == address(endpoint), "Invalid caller");
-
-        (address user, uint256 amount) = abi.decode(message, (address, uint256));
-
-        // mint REWE on destination chain
+    function _lzReceive(
+        Origin calldata _origin,
+        bytes32,
+        bytes calldata _message,
+        address,
+        bytes calldata
+    ) internal override {
+        (address user, uint256 amount) = abi.decode(_message, (address, uint256));
         rewe.mint(user, amount);
-
-        emit BridgeReceive(user, amount, srcChain);
+        emit BridgeReceive(user, amount, _origin.srcEid);
     }
 
-    // ---------------------------------------------------------
-    // OWNER SETTINGS
-    // ---------------------------------------------------------
     function updateAccess(address newAccess) external onlyOwner {
         access = SystemAccess(newAccess);
     }
 
-    function updateEndpoint(address newEndpoint) external onlyOwner {
-        endpoint = ILayerZeroEndpointV2(newEndpoint);
-    }
-
-    function updateChainIds(uint32 newMonad, uint32 newEthereum) external onlyOwner {
-        monadEid = newMonad;
-        ethereumEid = newEthereum;
+    function withdrawNative(address payable to) external onlyOwner {
+        uint256 balance = address(this).balance;
+        require(balance > 0, "Nothing to withdraw");
+        (bool success, ) = to.call{value: balance}("");
+        require(success, "Withdraw failed");
+        emit WithdrawNative(to, balance);
     }
 }

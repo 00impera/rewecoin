@@ -1,0 +1,73 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+import {Script, console} from "forge-std/Script.sol";
+import {SystemAccess} from "../src/SystemAccess.sol";
+import {ReweCoinToken} from "../src/ReweCoinToken.sol";
+import {PlayerData} from "../src/PlayerData.sol";
+import {Leaderboard} from "../src/Leaderboard.sol";
+import {PoolManager} from "../src/PoolManager.sol";
+import {NFTRewe} from "../src/NFTRewe.sol";
+import {BuyContract} from "../src/BuyContract.sol";
+import {StakeContract} from "../src/StakeContract.sol";
+import {SwapContract} from "../src/SwapContract.sol";
+import {BridgeMonad} from "../src/BridgeMonad.sol";
+
+contract DeployMainnetScript is Script {
+    // ADRESE REALE, VERIFICATE MANUAL - Monad Mainnet
+    address constant USDC = 0x754704Bc059F8C67012fEd69BC8A327a5aafb603;
+    address constant USDT0 = 0xe7cd86e13AC4309349F30B3435a9d337750fC82D;
+    address constant CHAINLINK_MON_USD = 0xBcD78f76005B7515837af6b50c7C52BCf73822fb;
+
+    // TODO_OBLIGATORIU: inlocuieste cu endpoint LayerZero real inainte de a folosi bridge-ul
+    address constant LZ_ENDPOINT_V2 = 0x6F475642a6e85809B1c36Fa62763669b1b48DD5B; // real, verificat din docs.layerzero.network
+
+    function run() external {
+        uint256 deployerKey = vm.envUint("PRIVATE_KEY");
+        address deployer = vm.addr(deployerKey);
+
+        vm.startBroadcast(deployerKey);
+
+        SystemAccess access = new SystemAccess();
+        ReweCoinToken rewe = new ReweCoinToken(address(access));
+        PlayerData playerData = new PlayerData(address(access));
+        Leaderboard leaderboard = new Leaderboard(address(access));
+        PoolManager poolManager = new PoolManager(address(access), address(leaderboard), address(playerData));
+        NFTRewe nft = new NFTRewe(address(access));
+
+        BuyContract buyContract = new BuyContract(
+            address(access), address(rewe), address(nft),
+            address(playerData), address(poolManager),
+            USDC, USDT0, CHAINLINK_MON_USD
+        );
+        StakeContract stakeContract = new StakeContract(address(access), address(rewe), address(playerData));
+        SwapContract swapContract = new SwapContract(
+            address(access), address(rewe), address(playerData),
+            USDC, USDT0
+        );
+        BridgeMonad bridge = new BridgeMonad(LZ_ENDPOINT_V2, deployer, address(access), address(rewe));
+
+        access.addSystem(address(buyContract));
+        access.addSystem(address(swapContract));
+        access.addSystem(address(stakeContract));
+        access.addSystem(address(poolManager));
+        access.addSystem(address(bridge));
+
+        poolManager.createPool(10000 ether, 500 ether);
+
+        vm.stopBroadcast();
+
+        console.log("=== DEPLOY MAINNET COMPLET ===");
+        console.log("SystemAccess:  ", address(access));
+        console.log("ReweCoinToken: ", address(rewe));
+        console.log("PlayerData:    ", address(playerData));
+        console.log("Leaderboard:   ", address(leaderboard));
+        console.log("PoolManager:   ", address(poolManager));
+        console.log("NFTRewe:       ", address(nft));
+        console.log("BuyContract:   ", address(buyContract));
+        console.log("StakeContract: ", address(stakeContract));
+        console.log("SwapContract:  ", address(swapContract));
+        console.log("BridgeMonad:   ", address(bridge));
+        console.log("BridgeMonad configurat cu endpoint real. Mai trebuie setPeer() catre contractul pereche de pe Ethereum.");
+    }
+}

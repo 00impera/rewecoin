@@ -1,0 +1,88 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+import {Script, console} from "forge-std/Script.sol";
+import {SystemAccess} from "../src/SystemAccess.sol";
+import {ReweCoinToken} from "../src/ReweCoinToken.sol";
+import {PlayerData} from "../src/PlayerData.sol";
+import {Leaderboard} from "../src/Leaderboard.sol";
+import {PoolManager} from "../src/PoolManager.sol";
+import {NFTRewe} from "../src/NFTRewe.sol";
+import {BuyContract} from "../src/BuyContract.sol";
+import {StakeContract} from "../src/StakeContract.sol";
+import {SwapContract} from "../src/SwapContract.sol";
+import {BridgeMonad} from "../src/BridgeMonad.sol";
+import {MockPriceFeed} from "../src/MockPriceFeed.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+
+contract MockERC20 is ERC20 {
+    constructor(string memory name, string memory symbol) ERC20(name, symbol) {}
+    function mint(address to, uint256 amount) external {
+        _mint(to, amount);
+    }
+}
+
+contract DeployScript is Script {
+    address constant LZ_ENDPOINT_PLACEHOLDER = address(uint160(0xdEaD));
+
+    function run() external {
+        uint256 deployerKey = vm.envUint("PRIVATE_KEY");
+        address deployer = vm.addr(deployerKey);
+
+        vm.startBroadcast(deployerKey);
+
+        MockERC20 usdc = new MockERC20("USD Coin", "USDC");
+        MockERC20 usdt = new MockERC20("Tether", "USDT");
+        usdc.mint(deployer, 100000 ether);
+        usdt.mint(deployer, 100000 ether);
+
+        MockPriceFeed monUsdFeed = new MockPriceFeed(3000 * 1e8); // TODO_VERIFICA: inlocuieste cu adresa Chainlink reala pe mainnet
+
+        SystemAccess access = new SystemAccess();
+        ReweCoinToken rewe = new ReweCoinToken(address(access));
+        PlayerData playerData = new PlayerData(address(access));
+        Leaderboard leaderboard = new Leaderboard(address(access));
+        PoolManager poolManager = new PoolManager(address(access), address(leaderboard), address(playerData));
+        NFTRewe nft = new NFTRewe(address(access));
+
+        BuyContract buyContract = new BuyContract(
+            address(access), address(rewe), address(nft),
+            address(playerData), address(poolManager),
+            address(usdc), address(usdt), address(monUsdFeed)
+        );
+        StakeContract stakeContract = new StakeContract(address(access), address(rewe), address(playerData));
+        SwapContract swapContract = new SwapContract(
+            address(access), address(rewe), address(playerData),
+            address(usdc), address(usdt)
+        );
+        BridgeMonad bridge = new BridgeMonad(LZ_ENDPOINT_PLACEHOLDER, deployer, address(access), address(rewe));
+
+        access.addSystem(address(buyContract));
+        access.addSystem(address(swapContract));
+        access.addSystem(address(stakeContract));
+        access.addSystem(address(poolManager));
+        access.addSystem(address(bridge));
+
+        poolManager.createPool(10000 ether, 500 ether);
+
+        usdc.transfer(address(swapContract), 10000 ether);
+        usdt.transfer(address(swapContract), 10000 ether);
+
+        vm.stopBroadcast();
+
+        console.log("=== DEPLOY COMPLET ===");
+        console.log("SystemAccess:  ", address(access));
+        console.log("ReweCoinToken: ", address(rewe));
+        console.log("PlayerData:    ", address(playerData));
+        console.log("Leaderboard:   ", address(leaderboard));
+        console.log("PoolManager:   ", address(poolManager));
+        console.log("NFTRewe:       ", address(nft));
+        console.log("BuyContract:   ", address(buyContract));
+        console.log("StakeContract: ", address(stakeContract));
+        console.log("SwapContract:  ", address(swapContract));
+        console.log("BridgeMonad:   ", address(bridge));
+        console.log("MockUSDC:      ", address(usdc));
+        console.log("MockUSDT:      ", address(usdt));
+        console.log("MockPriceFeed: ", address(monUsdFeed));
+    }
+}
