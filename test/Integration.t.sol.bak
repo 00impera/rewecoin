@@ -1,0 +1,130 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+import {Test} from "forge-std/Test.sol";
+import {SystemAccess} from "../src/SystemAccess.sol";
+import {ReweCoinToken} from "../src/ReweCoinToken.sol";
+import {PlayerData} from "../src/PlayerData.sol";
+import {Leaderboard} from "../src/Leaderboard.sol";
+import {PoolManager} from "../src/PoolManager.sol";
+import {NFTRewe} from "../src/NFTRewe.sol";
+import {BuyContract} from "../src/BuyContract.sol";
+import {StakeContract} from "../src/StakeContract.sol";
+import {SwapContract} from "../src/SwapContract.sol";
+import {MockPriceFeed} from "../src/MockPriceFeed.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+
+contract MockERC20 is ERC20 {
+    constructor(string memory name, string memory symbol) ERC20(name, symbol) {}
+    function mint(address to, uint256 amount) external {
+        _mint(to, amount);
+    }
+}
+
+contract IntegrationTest is Test {
+    SystemAccess access;
+    ReweCoinToken rewe;
+    PlayerData playerData;
+    Leaderboard leaderboard;
+    PoolManager poolManager;
+    NFTRewe nft;
+    BuyContract buyContract;
+    StakeContract stakeContract;
+    SwapContract swapContract;
+    MockERC20 usdc;
+    MockERC20 usdt;
+    MockPriceFeed monUsdFeed;
+
+    address user = address(0xBEEF);
+
+    function setUp() public {
+        access = new SystemAccess();
+        rewe = new ReweCoinToken(address(access));
+        playerData = new PlayerData(address(access));
+        leaderboard = new Leaderboard(address(access));
+        poolManager = new PoolManager(address(access), address(leaderboard), address(playerData));
+        nft = new NFTRewe(address(access));
+        usdc = new MockERC20("USD Coin", "USDC");
+        usdt = new MockERC20("Tether", "USDT");
+        monUsdFeed = new MockPriceFeed(3000 * 1e8); // 1 MON =  in test, ajustabil cu setPrice()
+
+        buyContract = new BuyContract(
+            address(access), address(rewe), address(nft),
+            address(playerData), address(poolManager),
+            address(usdc), address(usdt), address(monUsdFeed)
+        );
+        stakeContract = new StakeContract(address(access), address(rewe), address(playerData));
+        swapContract = new SwapContract(
+            address(access), address(rewe), address(playerData),
+            address(usdc), address(usdt)
+        );
+
+        access.addSystem(address(buyContract));
+        access.addSystem(address(swapContract));
+        access.addSystem(address(stakeContract));
+        access.addSystem(address(poolManager));
+
+        usdc.mint(user, 1000 ether);
+        usdc.mint(address(swapContract), 1000 ether);
+        usdt.mint(address(swapContract), 1000 ether);
+
+        vm.deal(user, 10 ether);
+        vm.deal(address(swapContract), 10 ether);
+
+        poolManager.createPool(10000 ether, 500 ether);
+    }
+
+    function test_FullFlow_BuyStakeUnstakeSwap() public {
+        vm.startPrank(user);
+
+        usdc.approve(address(buyContract), 100 ether);
+        buyContract.buyWithUSDC(100 ether, 0);
+
+        (uint256 totalUsd, uint256 totalRewe, , uint256[] memory nftIds, ) = playerData.getPlayer(user);
+        assertEq(totalUsd, 100 ether, "USD gresit dupa buy");
+        assertEq(totalRewe, 1000 ether, "REWE gresit dupa buy (100 USD * rate 10)");
+        assertEq(nftIds.length, 1, "NFT nu a fost mintat");
+        assertEq(rewe.balanceOf(user), 1000 ether, "balance REWE gresit");
+
+        rewe.approve(address(stakeContract), 500 ether);
+        stakeContract.stake(500 ether);
+        (uint256 stakedAmount, , bool active) = stakeContract.stakes(user);
+        assertEq(stakedAmount, 500 ether);
+        assertTrue(active);
+
+        vm.warp(block.timestamp + 2 hours);
+        stakeContract.unstake();
+        assertEq(rewe.balanceOf(user), 1000 ether, "REWE nu s-a intors dupa unstake");
+
+        rewe.approve(address(swapContract), 100 ether);
+        uint256 usdcBefore = usdc.balanceOf(user);
+        swapContract.swapReweToUSDC(100 ether);
+        uint256 usdcAfter = usdc.balanceOf(user);
+        assertEq(usdcAfter - usdcBefore, 10 ether, "USDC primit gresit dupa swap (100 REWE / rate 10)");
+
+        vm.stopPrank();
+    }
+
+    function test_PoolCompletes_AtTarget() public {
+        usdc.mint(user, 10000 ether);
+        vm.startPrank(user);
+        usdc.approve(address(buyContract), 10000 ether);
+        buyContract.buyWithUSDC(10000 ether, 0);
+        vm.stopPrank();
+
+        (, , uint256 currentUsd, , bool active, bool completed) = poolManager.getPool(0);
+        assertEq(currentUsd, 10000 ether);
+        assertFalse(active);
+        assertTrue(completed);
+    }
+
+    function test_BuyWithMON_UsesOracle() public {
+        vm.startPrank(user);
+        // 1 MON trimis, oracle spune  -> 3000 USD -> 30000 REWE
+        buyContract.buyWithMON{value: 1 ether}(0);
+        (uint256 totalUsd, uint256 totalRewe, , , ) = playerData.getPlayer(user);
+        assertEq(totalUsd, 3000 ether, "USD calculat gresit din oracle");
+        assertEq(totalRewe, 30000 ether, "REWE calculat gresit din oracle");
+        vm.stopPrank();
+    }
+}

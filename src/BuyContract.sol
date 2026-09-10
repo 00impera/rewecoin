@@ -3,6 +3,8 @@ pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
 
 import "./SystemAccess.sol";
 import "./ReweCoinToken.sol";
@@ -11,6 +13,7 @@ import "./PlayerData.sol";
 import "./PoolManager.sol";
 
 contract BuyContract is Ownable {
+    using SafeERC20 for IERC20;
 
     SystemAccess public access;
     ReweCoinToken public rewe;
@@ -21,11 +24,17 @@ contract BuyContract is Ownable {
     IERC20 public usdc;
     IERC20 public usdt;
 
-    uint256 public usdToReweRate = 10; // 1 USD = 10 REWE
+    uint256 private constant USD_DECIMALS_SCALE = 1e12; // 10^(18-6)
+
+    AggregatorV3Interface public monUsdPriceFeed;
+    uint256 public constant PRICE_FEED_MAX_AGE = 3600;
+
+    uint256 public usdToReweRate = 10;
 
     event BuyUSD(address indexed user, uint256 usdAmount, uint256 poolId);
     event BuyREWE(address indexed user, uint256 reweAmount);
     event MintNFT(address indexed user, uint256 nftId);
+    event WithdrawMON(address indexed to, uint256 amount);
 
     constructor(
         address _access,
@@ -34,8 +43,9 @@ contract BuyContract is Ownable {
         address _playerData,
         address _poolManager,
         address _usdc,
-        address _usdt
-    ) {
+        address _usdt,
+        address _monUsdPriceFeed
+    ) Ownable(msg.sender) {
         access = SystemAccess(_access);
         rewe = ReweCoinToken(_rewe);
         nft = NFTRewe(_nft);
@@ -43,6 +53,7 @@ contract BuyContract is Ownable {
         poolManager = PoolManager(_poolManager);
         usdc = IERC20(_usdc);
         usdt = IERC20(_usdt);
+        monUsdPriceFeed = AggregatorV3Interface(_monUsdPriceFeed);
     }
 
     modifier onlySystem() {
@@ -50,78 +61,46 @@ contract BuyContract is Ownable {
         _;
     }
 
-    // ---------------------------------------------------------
-    // BUY WITH USDC
-    // ---------------------------------------------------------
     function buyWithUSDC(uint256 amount, uint256 poolId) external {
         require(amount > 0, "Invalid amount");
-
-        usdc.transferFrom(msg.sender, address(this), amount);
-
-        uint256 usdAmount = amount; // 1 USDC = 1 USD
-
+        usdc.safeTransferFrom(msg.sender, address(this), amount);
+        uint256 usdAmount = amount * USD_DECIMALS_SCALE;
         _processBuy(msg.sender, usdAmount, poolId);
     }
 
-    // ---------------------------------------------------------
-    // BUY WITH USDT
-    // ---------------------------------------------------------
     function buyWithUSDT(uint256 amount, uint256 poolId) external {
         require(amount > 0, "Invalid amount");
-
-        usdt.transferFrom(msg.sender, address(this), amount);
-
-        uint256 usdAmount = amount; // 1 USDT = 1 USD
-
+        usdt.safeTransferFrom(msg.sender, address(this), amount);
+        uint256 usdAmount = amount * USD_DECIMALS_SCALE;
         _processBuy(msg.sender, usdAmount, poolId);
     }
 
-    // ---------------------------------------------------------
-    // BUY WITH ETH
-    // ---------------------------------------------------------
-    function buyWithETH(uint256 poolId) external payable {
-        require(msg.value > 0, "Invalid ETH");
-
-        // Simplified conversion: 1 ETH = 3000 USD (example)
-        uint256 usdAmount = msg.value * 3000;
-
+    function buyWithMON(uint256 poolId) external payable {
+        require(msg.value > 0, "Invalid MON");
+        uint256 usdAmount = _getUsdValueOfMon(msg.value);
         _processBuy(msg.sender, usdAmount, poolId);
     }
 
-    // ---------------------------------------------------------
-    // INTERNAL BUY LOGIC
-    // ---------------------------------------------------------
+    function _getUsdValueOfMon(uint256 monAmount) internal view returns (uint256) {
+        (, int256 price, , uint256 updatedAt, ) = monUsdPriceFeed.latestRoundData();
+        require(price > 0, "Invalid price feed");
+        require(block.timestamp - updatedAt < PRICE_FEED_MAX_AGE, "Stale price feed");
+        return (monAmount * uint256(price)) / 1e8;
+    }
+
     function _processBuy(address user, uint256 usdAmount, uint256 poolId) internal {
-
-        // 1. Update PlayerData
         playerData.addUsd(user, usdAmount);
-
-        // 2. Convert USD â†’ REWE
         uint256 reweAmount = usdAmount * usdToReweRate;
         rewe.mint(user, reweAmount);
         playerData.addRewe(user, reweAmount);
-
         emit BuyUSD(user, usdAmount, poolId);
         emit BuyREWE(user, reweAmount);
-
-        // 3. Mint NFT
-        uint256 nftId = nft.mintNFT(
-            user,
-            NFTRewe.NFTType.GOLD,
-            poolId,
-            usdAmount
-        );
-
+        uint256 nftId = nft.mintNFT(user, NFTRewe.NFTType.GOLD, poolId, usdAmount);
         playerData.addNFT(user, nftId);
         emit MintNFT(user, nftId);
-
-        // 4. Join pool
         poolManager.joinPool(user, poolId, usdAmount);
     }
 
-    // ---------------------------------------------------------
-    // OWNER SETTINGS
-    // ---------------------------------------------------------
     function updateRate(uint256 newRate) external onlyOwner {
         usdToReweRate = newRate;
     }
@@ -132,5 +111,21 @@ contract BuyContract is Ownable {
 
     function updatePlayerData(address newPlayerData) external onlyOwner {
         playerData = PlayerData(newPlayerData);
+    }
+
+    function updateNFT(address newNft) external onlyOwner {
+        nft = NFTRewe(newNft);
+    }
+
+    function updatePriceFeed(address newFeed) external onlyOwner {
+        monUsdPriceFeed = AggregatorV3Interface(newFeed);
+    }
+
+    function withdrawMON(address payable to) external onlyOwner {
+        uint256 balance = address(this).balance;
+        require(balance > 0, "No MON to withdraw");
+        (bool success, ) = to.call{value: balance}("");
+        require(success, "Withdraw failed");
+        emit WithdrawMON(to, balance);
     }
 }
