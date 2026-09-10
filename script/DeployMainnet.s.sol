@@ -43,7 +43,7 @@ contract DeployMainnetScript is Script {
         StakeContract stakeContract = new StakeContract(address(access), address(rewe), address(playerData));
         SwapContract swapContract = new SwapContract(
             address(access), address(rewe), address(playerData),
-            USDC, USDT0
+            USDC, USDT0, CHAINLINK_MON_USD
         );
         BridgeMonad bridge = new BridgeMonad(LZ_ENDPOINT_V2, deployer, address(access), address(rewe));
 
