@@ -95,4 +95,8 @@ contract StakeContract is Ownable {
     function updateAccess(address newAccess) external onlyOwner {
         access = SystemAccess(newAccess);
     }
+
+    function updatePlayerData(address newPlayerData) external onlyOwner {
+        playerData = PlayerData(newPlayerData);
+    }
 }

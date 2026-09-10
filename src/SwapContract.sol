@@ -20,8 +20,10 @@ contract SwapContract is Ownable {
     uint256 public reweToUsdRate = 10; // 10 REWE = 1 USD
     uint256 public usdToReweRate = 10; // 1 USD = 10 REWE
 
-    event SwapReweToUSD(address indexed user, uint256 reweAmount, uint256 usdAmount);
-    event SwapUSDToRewe(address indexed user, uint256 usdAmount, uint256 reweAmount);
+    uint256 public constant USD_DECIMALS_SCALE = 1e12;
+
+    event SwapReweToUSD(address indexed user, uint256 reweAmount, uint256 usdAmountRaw);
+    event SwapUSDToRewe(address indexed user, uint256 usdAmountRaw, uint256 reweAmount);
 
     constructor(
         address _access,
@@ -42,106 +44,61 @@ contract SwapContract is Ownable {
         _;
     }
 
-    // ---------------------------------------------------------
-    // SWAP REWE → USDC
-    // ---------------------------------------------------------
     function swapReweToUSDC(uint256 reweAmount) external {
         require(reweAmount > 0, "Invalid amount");
-
-        // burn REWE from user
         rewe.burn(msg.sender, reweAmount);
-
-        // convert REWE → USD
-        uint256 usdAmount = reweAmount / reweToUsdRate;
-
-        // send USDC to user
-        usdc.transfer(msg.sender, usdAmount);
-
-        // update PlayerData
-        playerData.addRewe(msg.sender, 0 - reweAmount);
-        playerData.addUsd(msg.sender, usdAmount);
-
-        emit SwapReweToUSD(msg.sender, reweAmount, usdAmount);
+        uint256 usdAmount18 = reweAmount / reweToUsdRate;
+        uint256 usdAmountRaw = usdAmount18 / USD_DECIMALS_SCALE;
+        usdc.transfer(msg.sender, usdAmountRaw);
+        playerData.subRewe(msg.sender, reweAmount);
+        playerData.addUsd(msg.sender, usdAmount18);
+        emit SwapReweToUSD(msg.sender, reweAmount, usdAmountRaw);
     }
 
-    // ---------------------------------------------------------
-    // SWAP REWE → USDT
-    // ---------------------------------------------------------
     function swapReweToUSDT(uint256 reweAmount) external {
         require(reweAmount > 0, "Invalid amount");
-
         rewe.burn(msg.sender, reweAmount);
-
-        uint256 usdAmount = reweAmount / reweToUsdRate;
-
-        usdt.transfer(msg.sender, usdAmount);
-
-        playerData.addRewe(msg.sender, 0 - reweAmount);
-        playerData.addUsd(msg.sender, usdAmount);
-
-        emit SwapReweToUSD(msg.sender, reweAmount, usdAmount);
+        uint256 usdAmount18 = reweAmount / reweToUsdRate;
+        uint256 usdAmountRaw = usdAmount18 / USD_DECIMALS_SCALE;
+        usdt.transfer(msg.sender, usdAmountRaw);
+        playerData.subRewe(msg.sender, reweAmount);
+        playerData.addUsd(msg.sender, usdAmount18);
+        emit SwapReweToUSD(msg.sender, reweAmount, usdAmountRaw);
     }
 
-    // ---------------------------------------------------------
-    // SWAP REWE → ETH
-    // ---------------------------------------------------------
     function swapReweToETH(uint256 reweAmount) external {
         require(reweAmount > 0, "Invalid amount");
-
         rewe.burn(msg.sender, reweAmount);
-
-        uint256 usdAmount = reweAmount / reweToUsdRate;
-
-        // simplified: 1 ETH = 3000 USD
-        uint256 ethAmount = usdAmount / 3000;
-
+        uint256 usdAmount18 = reweAmount / reweToUsdRate;
+        uint256 ethAmount = usdAmount18 / 3000;
         payable(msg.sender).transfer(ethAmount);
-
-        playerData.addRewe(msg.sender, 0 - reweAmount);
-        playerData.addUsd(msg.sender, usdAmount);
-
-        emit SwapReweToUSD(msg.sender, reweAmount, usdAmount);
+        playerData.subRewe(msg.sender, reweAmount);
+        playerData.addUsd(msg.sender, usdAmount18);
+        emit SwapReweToUSD(msg.sender, reweAmount, ethAmount);
     }
 
-    // ---------------------------------------------------------
-    // SWAP USDC → REWE
-    // ---------------------------------------------------------
-    function swapUSDCToRewe(uint256 usdAmount) external {
-        require(usdAmount > 0, "Invalid amount");
-
-        usdc.transferFrom(msg.sender, address(this), usdAmount);
-
-        uint256 reweAmount = usdAmount * usdToReweRate;
-
+    function swapUSDCToRewe(uint256 usdAmountRaw) external {
+        require(usdAmountRaw > 0, "Invalid amount");
+        usdc.transferFrom(msg.sender, address(this), usdAmountRaw);
+        uint256 usdAmount18 = usdAmountRaw * USD_DECIMALS_SCALE;
+        uint256 reweAmount = usdAmount18 * usdToReweRate;
         rewe.mint(msg.sender, reweAmount);
-
-        playerData.addUsd(msg.sender, usdAmount);
+        playerData.addUsd(msg.sender, usdAmount18);
         playerData.addRewe(msg.sender, reweAmount);
-
-        emit SwapUSDToRewe(msg.sender, usdAmount, reweAmount);
+        emit SwapUSDToRewe(msg.sender, usdAmountRaw, reweAmount);
     }
 
-    // ---------------------------------------------------------
-    // SWAP USDT → REWE
-    // ---------------------------------------------------------
-    function swapUSDTToRewe(uint256 usdAmount) external {
-        require(usdAmount > 0, "Invalid amount");
-
-        usdt.transferFrom(msg.sender, address(this), usdAmount);
-
-        uint256 reweAmount = usdAmount * usdToReweRate;
-
+    function swapUSDTToRewe(uint256 usdAmountRaw) external {
+        require(usdAmountRaw > 0, "Invalid amount");
+        usdt.transferFrom(msg.sender, address(this), usdAmountRaw);
+        uint256 usdAmount18 = usdAmountRaw * USD_DECIMALS_SCALE;
+        uint256 reweAmount = usdAmount18 * usdToReweRate;
         rewe.mint(msg.sender, reweAmount);
-
-        playerData.addUsd(msg.sender, usdAmount);
+        playerData.addUsd(msg.sender, usdAmount18);
         playerData.addRewe(msg.sender, reweAmount);
-
-        emit SwapUSDToRewe(msg.sender, usdAmount, reweAmount);
+        emit SwapUSDToRewe(msg.sender, usdAmountRaw, reweAmount);
     }
 
-    // ---------------------------------------------------------
-    // OWNER SETTINGS
-    // ---------------------------------------------------------
     function updateRates(uint256 _reweToUsd, uint256 _usdToRewe) external onlyOwner {
         reweToUsdRate = _reweToUsd;
         usdToReweRate = _usdToRewe;

@@ -96,7 +96,7 @@ contract BuyContract is Ownable {
         // 1. Update PlayerData
         playerData.addUsd(user, usdAmount);
 
-        // 2. Convert USD → REWE
+        // 2. Convert USD â†’ REWE
         uint256 reweAmount = usdAmount * usdToReweRate;
         rewe.mint(user, reweAmount);
         playerData.addRewe(user, reweAmount);
@@ -128,5 +128,9 @@ contract BuyContract is Ownable {
 
     function updateAccess(address newAccess) external onlyOwner {
         access = SystemAccess(newAccess);
+    }
+
+    function updatePlayerData(address newPlayerData) external onlyOwner {
+        playerData = PlayerData(newPlayerData);
     }
 }

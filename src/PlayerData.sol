@@ -43,6 +43,12 @@ contract PlayerData is Ownable {
         emit REWEAdded(user, amount);
     }
 
+    function subRewe(address user, uint256 amount) external onlySystem {
+        require(players[user].totalRewe >= amount, "Insufficient REWE tracked");
+        players[user].totalRewe -= amount;
+        emit REWEAdded(user, amount);
+    }
+
     function addPoints(address user, uint256 amount) external onlySystem {
         players[user].points += amount;
         emit PointsAdded(user, amount);

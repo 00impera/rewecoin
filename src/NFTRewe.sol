@@ -67,7 +67,7 @@ contract NFTRewe is ERC721, Ownable {
     }
 
     function tokenURI(uint256 id) public view override returns (string memory) {
-        require(_exists(id), "NFT does not exist");
+        require(_ownerOf(id) != address(0), "NFT does not exist");
 
         NFTData memory data = nftInfo[id];
 
