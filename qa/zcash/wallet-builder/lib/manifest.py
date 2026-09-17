@@ -191,7 +191,7 @@ def get_zcashd_commit(rpc: ZcashRPC) -> str:
     """
     Extract the running zcashd's subversion string from getnetworkinfo.
 
-    The subversion string typically looks like ``/MagicBean:6.10.0/``.
+    The subversion string typically looks like ``/ReweCoin:6.10.0/``.
 
     Read strictly: if getnetworkinfo does not report a subversion we raise
     rather than recording "unknown" in the manifest, since that would mask a

@@ -118,7 +118,7 @@ $ zcash-cli getnetworkinfo
 ```javascript
 {
   "version": 4020050,
-  "subversion": "/MagicBean:4.2.0/",
+  "subversion": "/ReweCoin:4.2.0/",
   "protocolversion": 170013,
   "connections": 9,
   "networks": [
@@ -245,7 +245,7 @@ $ zcash-cli getpeerinfo
     "addr": "ynizm2wpla6ec22q.onion",
     ...
     "version": 170013,
-    "subver": "/MagicBean:4.2.0/",
+    "subver": "/ReweCoin:4.2.0/",
     "inbound": false,
     ...
   }

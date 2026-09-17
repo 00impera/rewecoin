@@ -132,3 +132,12 @@ src/fuzz.cpp
 .updatecheck-token
 .env
 poetry.lock
+
+# ReweCoin: binare compilate, nu trebuie în git
+src/rewecoind
+src/rewecoin-cli
+src/rewecoin-tx
+src/zcash-cli
+src/zcash-gtest
+src/zcash-tx
+src/zcashd
