@@ -1,0 +1,15 @@
+[Unit]
+Description=ReweCoin Daemon (testnet)
+After=network.target
+
+[Service]
+Type=simple
+User=root
+Environment=HOME=/root
+WorkingDirectory=/root/rewecoin
+ExecStart=/root/rewecoin/src/rewecoind -testnet -datadir=/root/.rewetestnet -printtoconsole -reindex
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
