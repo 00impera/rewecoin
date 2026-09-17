@@ -141,3 +141,20 @@ src/zcash-cli
 src/zcash-gtest
 src/zcash-tx
 src/zcashd
+
+# Build artifacts
+*.o
+*.a
+*.lo
+depends/built
+depends/work
+depends/sources
+depends/*/
+src/qt/moc_*
+src/qt/*.moc
+.deps/
+.libs/
+Makefile
+Makefile.in
+*.log
+core
