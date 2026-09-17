@@ -1,99 +1,73 @@
-Zcash 6.20.0
-<img align="right" width="120" height="80" src="doc/imgs/logo.png">
-===========
+# ReweCoin Testnet
 
-> ## ⚠️ `zcashd` has reached its End of Life
->
-> `zcashd` reached its final End-of-Support halt on July 18th 2026 at block
-> height 3417100, and every unmodified `zcashd` 6.20.0 node shut down at that
-> height.
->
-> The `zcashd` node software is succeeded by the [Zebra](https://github.com/ZcashFoundation/zebra)
-> and [Zakura](https://zakura.com/) consensus node implementations, along with the
-> [Zallet](https://zcash.github.io/zallet/) full node wallet. Users of the `zcashd`
-> node and wallet implementation should migrate to these alternatives.
->
-> See the [End of Life](https://zcash.github.io/zcash/user/end-of-life.html)
-> page for the full timeline of the zcashd wind-down and migration guidance.
+ReweCoin is a Zcash fork running its own independent testnet, actively mining.
 
-What is Zcash?
---------------
+- Current height: 605+ (growing continuously, active mining)
+- Client: `/ReweCoin:1.0.0/`
+- Public seed node: `49.13.62.211:28333`
+- Repo: https://github.com/00impera/rewecoin-testnet
 
-[Zcash](https://z.cash/) is HTTPS for money.
+## How to connect
 
-Initially based on Bitcoin's design, Zcash has been developed from
-the Zerocash protocol to offer a far higher standard of privacy and
-anonymity. It uses a sophisticated zero-knowledge proving scheme to
-preserve confidentiality and hide the connections between shielded
-transactions. More technical details are available in our
-[Protocol Specification](https://zips.z.cash/protocol/protocol.pdf).
+### 1. Clone and build
 
-## The `zcashd` Full Node
-
-This repository was the home of the original `zcashd` software, a Zcash
-consensus node implementation.
-
-<p align="center">
-  <img src="doc/imgs/zcashd_screen.gif" height="500">
-</p>
-
-The `zcashd` code was derived from a source fork of
-[Bitcoin Core](https://github.com/bitcoin/bitcoin). The code was forked
-initially from Bitcoin Core v0.11.2, and the two codebases diverged
-substantially.
-
-
-
-#### :lock: Security Warnings
-
-See important security warnings on the
-[Security Information page](https://z.cash/support/security/).
-
-**Zcash is experimental and a work in progress.** Use it at your own risk.
-
-####  :ledger: Deprecation Policy
-
-This release is considered deprecated 16 weeks after the release day. There
-is an automatic deprecation shutdown feature which will halt the node some
-time after this 16-week period. The automatic feature is based on block
-height.
-
-## Other Zcash Implementations
-
-The [Zebra](https://github.com/ZcashFoundation/zebra) project offers a
-different Zcash consensus node implementation, written largely from the
-ground up.
-
-## Getting Started
-
-Please see our [user
-guide](https://zcash.readthedocs.io/en/latest/rtd_pages/rtd_docs/user_guide.html)
-for instructions on joining the main Zcash network.
-
-### Need Help?
-
-* :blue_book: See the documentation at the [ReadTheDocs](https://zcash.readthedocs.io)
-  for help and more information.
-* :incoming_envelope: Ask for help on the [Zcash forum](https://forum.zcashcommunity.com/).
-* :speech_balloon: Join our community on the [Zcash Global Discord](https://discord.com/invite/zcash).
-* 🧑‍🎓: Learn at [ZecHub](https://zechub.wiki/)
-
-Participation in the Zcash project is subject to a
-[Code of Conduct](code_of_conduct.md).
-
-### Building
-
-Build Zcash along with most dependencies from source by running the following command:
-
-```
+git clone https://github.com/00impera/rewecoin-testnet.git
+cd rewecoin-testnet
 ./zcutil/build.sh -j$(nproc)
-```
 
-Currently, Zcash is only officially supported on Debian and Ubuntu. See the
-[Debian / Ubuntu build page](https://zcash.readthedocs.io/en/latest/rtd_pages/Debian-Ubuntu-build.html)
-for detailed instructions.
+The build takes 15-30 minutes depending on your machine's resources.
 
-License
--------
+### 2. Create your own datadir and config
 
-For license information see the file [COPYING](COPYING).
+mkdir -p ~/.rewetestnet
+
+Create the file ~/.rewetestnet/zcash.conf with this content:
+
+testnet=1
+server=1
+listen=1
+rpcport=18233
+port=28333
+rpcuser=CHOOSE_A_USERNAME
+rpcpassword=CHOOSE_A_LONG_UNIQUE_PASSWORD
+addnode=49.13.62.211:28333
+gen=0
+
+Important: rpcuser and rpcpassword are local, only for accessing your own node. Do not share them with anyone and do not use the example values.
+
+### 3. Start the node
+
+./src/rewecoind -testnet -datadir=$HOME/.rewetestnet -printtoconsole
+
+The node will connect to the public seed and start syncing the chain.
+
+### 4. Check sync progress
+
+In another terminal:
+
+./src/rewecoin-cli -testnet -datadir=$HOME/.rewetestnet getblockcount
+./src/rewecoin-cli -testnet -datadir=$HOME/.rewetestnet getpeerinfo
+
+The height should keep increasing until it catches up with the seed.
+
+### 5. (Optional) Mine locally
+
+./src/rewecoin-cli -testnet -datadir=$HOME/.rewetestnet getnewaddress
+
+Add the generated address to zcash.conf:
+
+mineraddress=GENERATED_ADDRESS
+gen=1
+genproclimit=1
+
+Restart the node.
+
+## Known limitations
+
+- All consensus upgrades (Overwinter, Sapling, Blossom, Heartwood, Canopy, NU5) are active from height 1. It is not possible to test the actual transition between them, only their combined behavior.
+- Mined coinbase requires 100 blocks of maturity before it can be spent.
+- The testnet runs on a single known seed node. Resilience to network partitioning has not been tested.
+
+## Reporting issues
+
+Open an issue on this repo, including relevant output from journalctl or -printtoconsole.
