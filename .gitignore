@@ -158,3 +158,5 @@ Makefile
 Makefile.in
 *.log
 core
+src/*.backup*
+*.backup*

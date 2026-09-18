@@ -57,7 +57,7 @@
 using namespace std;
 
 #if defined(NDEBUG)
-# error "Zcash cannot be compiled without assertions."
+# error "ReweCoin cannot be compiled without assertions."
 #endif
 
 #include "librustzcash.h"
@@ -142,7 +142,7 @@ static void CheckBlockIndex(const Consensus::Params& consensusParams);
 /** Constant stuff for coinbase transactions we create: */
 CScript COINBASE_FLAGS;
 
-const string strMessageMagic = "Zcash Signed Message:\n";
+const string strMessageMagic = "ReweCoin Signed Message:\n";
 
 // Internal stuff
 namespace {
@@ -939,7 +939,7 @@ bool ContextualCheckTransaction(
             int expiredDosLevel = IsExpiredTx(tx, nHeight - 1) ? dosLevelConstricting : 0;
             return state.DoS(
                     expiredDosLevel,
-                    error("ContextualCheckTransaction(): transaction is expired. Resending when caught up with the blockchain, or manually setting the zcashd txexpirydelta parameter may help."),
+                    error("ContextualCheckTransaction(): transaction is expired. Resending when caught up with the blockchain, or manually setting the rewecoind txexpirydelta parameter may help."),
                     REJECT_INVALID, "tx-overwinter-expired");
         }
 
@@ -3412,7 +3412,7 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
                 _("The Sprout shielded value pool balance is not tracked for "
                   "some blocks in your block index. This may indicate legacy "
                   "data that predates Sprout value pool tracking. Please "
-                  "restart zcashd with -reindex."));
+                  "restart rewecoind with -reindex."));
         }
         if (!MoneyRange(pindex->nChainSproutValue.value())) {
             return state.DoS(100,
@@ -3940,7 +3940,7 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
                         strprintf("%s: chain total supply does not match sum of pool balances at height %d (sprout=%d, sapling=%d, orchard=%d, lockbox=%d, transparent=%d, total=%d)", __func__,
                                   pindex->nHeight, sprout_supply, sapling_supply, orchard_supply, lockbox_supply, transparent_supply, total_supply),
                         _("The chain total supply does not match the sum of the pool balances. This indicates a fatal problem with the node's pool accounting. "
-                          "Please restart zcashd with -reindex."));
+                          "Please restart rewecoind with -reindex."));
                 }
             } else if (chainparams.RegTestAllowLegacyChainSupplyData()) {
                 LogPrintf("%s: skipping chain supply consistency check at height %d because chain supply tracking fields are missing (-regtestallowlegacychainsupplydata)\n", __func__,
@@ -3961,10 +3961,7 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
         //   set the correct value of hashFinalSaplingRoot; in particular,
         //   blocks that are never passed to ConnectBlock (and thus never on
         //   the main chain) will stay with hashFinalSaplingRoot set to null.
-        if (consensusParams.NetworkUpgradeActive(pindex->nHeight, Consensus::UPGRADE_HEARTWOOD)) {
-            pindex->hashFinalSaplingRoot = sapling_tree.root();
-        }
-
+           pindex->hashFinalSaplingRoot = sapling_tree.root();
         // - If this block is before NU5 activation:
         //   - hashAuthDataRoot and hashFinalOrchardRoot are always null.
         //   - We don't set hashChainHistoryRoot here to maintain the invariant

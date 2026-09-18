@@ -987,7 +987,7 @@ void InitLogging()
         fLogTimestamps);
 
     LogPrintf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
-    LogPrintf("Zcash version %s\n", FormatFullVersion());
+    LogPrintf("ReweCoin version %s\n", FormatFullVersion());
 }
 
 [[noreturn]] static void new_handler_terminate()
@@ -1963,10 +1963,10 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
 #ifdef ENABLE_MINING
  #ifndef ENABLE_WALLET
     if (GetBoolArg("-minetolocalwallet", false)) {
-        return InitError(_("Zcash was not built with wallet support. Set -minetolocalwallet=0 to use -mineraddress, or rebuild Zcash with wallet support."));
+        return InitError(_("ReweCoin was not built with wallet support. Set -minetolocalwallet=0 to use -mineraddress, or rebuild ReweCoin with wallet support."));
     }
     if (GetArg("-mineraddress", "").empty() && GetBoolArg("-gen", false)) {
-        return InitError(_("Zcash was not built with wallet support. Set -mineraddress, or rebuild Zcash with wallet support."));
+        return InitError(_("ReweCoin was not built with wallet support. Set -mineraddress, or rebuild ReweCoin with wallet support."));
     }
  #endif // !ENABLE_WALLET
 

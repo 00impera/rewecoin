@@ -116,30 +116,30 @@ public:
         consensus.vUpgrades[Consensus::UPGRADE_TESTDUMMY].nActivationHeight =
             Consensus::NetworkUpgrade::NO_ACTIVATION_HEIGHT;
         consensus.vUpgrades[Consensus::UPGRADE_OVERWINTER].nProtocolVersion = 170005;
-        consensus.vUpgrades[Consensus::UPGRADE_OVERWINTER].nActivationHeight = 347500;
+        consensus.vUpgrades[Consensus::UPGRADE_OVERWINTER].nActivationHeight = 1;
         consensus.vUpgrades[Consensus::UPGRADE_OVERWINTER].hashActivationBlock = std::nullopt;
         consensus.vUpgrades[Consensus::UPGRADE_SAPLING].nProtocolVersion = 170007;
-        consensus.vUpgrades[Consensus::UPGRADE_SAPLING].nActivationHeight = 419200;
+        consensus.vUpgrades[Consensus::UPGRADE_SAPLING].nActivationHeight = 1;
         consensus.vUpgrades[Consensus::UPGRADE_SAPLING].hashActivationBlock = std::nullopt;
         consensus.vUpgrades[Consensus::UPGRADE_BLOSSOM].nProtocolVersion = 170009;
-        consensus.vUpgrades[Consensus::UPGRADE_BLOSSOM].nActivationHeight = 653600;
+        consensus.vUpgrades[Consensus::UPGRADE_BLOSSOM].nActivationHeight = 1;
         consensus.vUpgrades[Consensus::UPGRADE_BLOSSOM].hashActivationBlock = std::nullopt;
         consensus.vUpgrades[Consensus::UPGRADE_HEARTWOOD].nProtocolVersion = 170011;
-        consensus.vUpgrades[Consensus::UPGRADE_HEARTWOOD].nActivationHeight = 903000;
+        consensus.vUpgrades[Consensus::UPGRADE_HEARTWOOD].nActivationHeight = 1;
         consensus.vUpgrades[Consensus::UPGRADE_HEARTWOOD].hashActivationBlock = std::nullopt;
         consensus.vUpgrades[Consensus::UPGRADE_CANOPY].nProtocolVersion = 170013;
-        consensus.vUpgrades[Consensus::UPGRADE_CANOPY].nActivationHeight = 1046400;
+        consensus.vUpgrades[Consensus::UPGRADE_CANOPY].nActivationHeight = 1;
         consensus.vUpgrades[Consensus::UPGRADE_CANOPY].hashActivationBlock = std::nullopt;
         consensus.vUpgrades[Consensus::UPGRADE_NU5].nProtocolVersion = 170100;
-        consensus.vUpgrades[Consensus::UPGRADE_NU5].nActivationHeight = 1687104;
+        consensus.vUpgrades[Consensus::UPGRADE_NU5].nActivationHeight = 1;
         consensus.vUpgrades[Consensus::UPGRADE_NU5].hashActivationBlock = std::nullopt;
         consensus.vUpgrades[Consensus::UPGRADE_NU6].nProtocolVersion = 170120;
-        consensus.vUpgrades[Consensus::UPGRADE_NU6].nActivationHeight = 2726400;
+        consensus.vUpgrades[Consensus::UPGRADE_NU6].nActivationHeight = Consensus::NetworkUpgrade::NO_ACTIVATION_HEIGHT;
         consensus.vUpgrades[Consensus::UPGRADE_NU6_1].nProtocolVersion = 170140;
-        consensus.vUpgrades[Consensus::UPGRADE_NU6_1].nActivationHeight = 3146400;
+        consensus.vUpgrades[Consensus::UPGRADE_NU6_1].nActivationHeight = Consensus::NetworkUpgrade::NO_ACTIVATION_HEIGHT;
         consensus.nTemporaryOrchardDisablingSoftForkHeight = 3363426;
         consensus.vUpgrades[Consensus::UPGRADE_NU6_2].nProtocolVersion = 170150;
-        consensus.vUpgrades[Consensus::UPGRADE_NU6_2].nActivationHeight = 3364600;
+        consensus.vUpgrades[Consensus::UPGRADE_NU6_2].nActivationHeight = Consensus::NetworkUpgrade::NO_ACTIVATION_HEIGHT;
         consensus.vUpgrades[Consensus::UPGRADE_ZFUTURE].nProtocolVersion = 0x7FFFFFFF;
         consensus.vUpgrades[Consensus::UPGRADE_ZFUTURE].nActivationHeight =
             Consensus::NetworkUpgrade::NO_ACTIVATION_HEIGHT;
@@ -162,11 +162,11 @@ public:
         // guarantees the first 2 characters, when base58 encoded, are "SK"
         keyConstants.base58Prefixes[ZCSPENDING_KEY]     = {0xAB,0x36};
 
-        keyConstants.bech32HRPs[SAPLING_PAYMENT_ADDRESS]      = "zs";
-        keyConstants.bech32HRPs[SAPLING_FULL_VIEWING_KEY]     = "zviews";
-        keyConstants.bech32HRPs[SAPLING_INCOMING_VIEWING_KEY] = "zivks";
-        keyConstants.bech32HRPs[SAPLING_EXTENDED_SPEND_KEY]   = "secret-extended-key-main";
-        keyConstants.bech32HRPs[SAPLING_EXTENDED_FVK]         = "zxviews";
+        keyConstants.bech32HRPs[SAPLING_PAYMENT_ADDRESS]      = "rws";
+        keyConstants.bech32HRPs[SAPLING_FULL_VIEWING_KEY]     = "rwviews";
+        keyConstants.bech32HRPs[SAPLING_INCOMING_VIEWING_KEY] = "rwivks";
+        keyConstants.bech32HRPs[SAPLING_EXTENDED_SPEND_KEY]   = "secret-extended-key-rewecoin";
+        keyConstants.bech32HRPs[SAPLING_EXTENDED_FVK]         = "rwxviews";
 
         keyConstants.bech32mHRPs[TEX_ADDRESS]                 = "tex";
         {
@@ -313,7 +313,7 @@ public:
 
         // The best chain should have at least this much work.
         // From block 3308324, 2026-04-15.
-        consensus.nMinimumChainWork = uint256S("0x00000000000000000000000000000000000000000000000018bd77669ac52c2f");
+           consensus.nMinimumChainWork = uint256S("0x00");
 
         /**
          * The message start string should be awesome! ⓩ❤
@@ -344,47 +344,21 @@ public:
         fMineBlocksOnDemand = false;
         fTestnetToBeDeprecatedFieldRPC = false;
 
-        checkpointData = (CCheckpointData) {
+                checkpointData = (CCheckpointData) {
             boost::assign::map_list_of
-            (      0, consensus.hashGenesisBlock)
-            (   2500, uint256S("0x00000006dc968f600be11a86cbfbf7feb61c7577f45caced2e82b6d261d19744"))
-            (  15000, uint256S("0x00000000b6bc56656812a5b8dcad69d6ad4446dec23b5ec456c18641fb5381ba"))
-            (  67500, uint256S("0x000000006b366d2c1649a6ebb4787ac2b39c422f451880bc922e3a6fbd723616"))
-            ( 100000, uint256S("0x000000001c5c82cd6baccfc0879e3830fd50d5ede17fa2c37a9a253c610eb285"))
-            ( 133337, uint256S("0x0000000002776ccfaf06cc19857accf3e20c01965282f916b8a886e3e4a05be9"))
-            ( 180000, uint256S("0x000000001205b742eac4a1b3959635bdf8aeada078d6a996df89740f7b54351d"))
-            ( 222222, uint256S("0x000000000cafb9e56445a6cabc8057b57ee6fcc709e7adbfa195e5c7fac61343"))
-            ( 270000, uint256S("0x00000000025c1cfa0258e33ab050aaa9338a3d4aaa3eb41defefc887779a9729"))
-            ( 304600, uint256S("0x00000000028324e022a45014c4a4dc51e95d41e6bceb6ad554c5b65d5cea3ea5"))
-            ( 410100, uint256S("0x0000000002c565958f783a24a4ac17cde898ff525e75ed9baf66861b0b9fcada"))
-            ( 497000, uint256S("0x0000000000abd333f0acca6ffdf78a167699686d6a7d25c33fca5f295061ffff"))
-            ( 525000, uint256S("0x0000000001a36c500378be8862d9bf1bea8f1616da6e155971b608139cc7e39b"))
-            ( 650000, uint256S("0x0000000000a0a3fbbd739fb4fcbbfefff44efffc2064ca69a59d5284a2da26e2"))
-            ( 800000, uint256S("0x00000000013f1f4e5634e896ebdbe63dec115547c1480de0d83c64426f913c27"))
-            (1000000, uint256S("0x000000000062eff9ae053020017bfef24e521a2704c5ec9ead2a4608ac70fc7a"))
-            (1200000, uint256S("0x0000000000347d5011108fdcf667c93e622e8635c94e586556898e41db18d192"))
-            (1400000, uint256S("0x0000000001155ecec0ad3924d47ad476c0a5ed7527b8776f53cbda1a780b9f76"))
-            (1600000, uint256S("0x0000000000aae69fb228f90e77f34c24b7920667eaca726c3a3939536f03dcfc"))
-            (1860000, uint256S("0x000000000043a968c78af5fb8133e00e6fe340051c19dd969e53ab62bf3dc22a"))
-            (2000000, uint256S("0x00000000010accaf2f87934765dc2e0bf4823a2b1ae2c1395b334acfce52ad68"))
-            (2200000, uint256S("0x0000000001a0139c4c4d0e8f68cc562227c6003f4b1b640a3d921aeb8c3d2e3d"))
-            (2400000, uint256S("0x0000000000294d1c8d87a1b6566d302aa983691bc3cab0583a245389bbb9d285"))
-            (2600000, uint256S("0x0000000000b5ad92fcec0069d590f674d05ec7d96b1ff727863ea390950c4e49"))
-            (2800000, uint256S("0x00000000011a226fb25d778d65b055605a82da016989b7788e0ce83c4f8d64f7"))
-            (3000000, uint256S("0x0000000000573729e4db33678233e5dc0cc721c9c09977c64dcaa3f6344de8e9")),
-            1752983473,     // * UNIX timestamp of last checkpoint block
-            15537904,       // * total number of transactions between genesis and last checkpoint
-            5967            // * estimated number of transactions per day after checkpoint
-                            //   (total number of tx * 48 * 24) / checkpoint block height
+            (0, consensus.hashGenesisBlock),
+            (int64_t)genesis.nTime,  // * UNIX timestamp of last checkpoint block (genesis)
+            0,                        // * total number of transactions between genesis and last checkpoint
+            0                         // * estimated number of transactions per day after checkpoint
         };
 
         // Hardcoded fallback value for the Sprout shielded value pool balance
         // for nodes that have not reindexed since the introduction of monitoring
         // in #2795.
-        nSproutValuePoolCheckpointHeight = 520633;
-        nSproutValuePoolCheckpointBalance = 22145062442933;
+        nSproutValuePoolCheckpointHeight = 0;
+        nSproutValuePoolCheckpointBalance = 0;
         fZIP209Enabled = true;
-        hashSproutValuePoolCheckpointBlock = uint256S("0000000000c7b46b6bc04b4cbf87d8bb08722aebd51232619b214f7273f8460e");
+        hashSproutValuePoolCheckpointBlock.SetNull();
 
         // Chain supply checkpoint at NU6.1 activation (height 3146400).
         // This allows nodes with legacy block index data (written by zcashd
@@ -393,66 +367,18 @@ public:
         // requiring a reindex. The other pool balances are included so that
         // we do not need to trust that the computed values from before the
         // checkpoint are correct.
-        nChainSupplyCheckpointHeight = 3146400;
-        nChainSupplyCheckpointTotalSupply = 1640588297804480;
-        nChainSupplyCheckpointTransparentValue = 1158133657237751;
-        nChainSupplyCheckpointSproutValue = 2562695744028;
-        nChainSupplyCheckpointSaplingValue = 64691367655556;
-        nChainSupplyCheckpointOrchardValue = 415200558417145;
-        nChainSupplyCheckpointLockboxValue = 18750000;
-        hashChainSupplyCheckpointBlock = uint256S("0000000000b98a7d8f390793fa113bf6755935f0c14ea817af07d2c16f2c3ef4");
-
-        // Founders reward script expects a vector of 2-of-3 multisig addresses
-        vFoundersRewardAddress = {
-            "t3Vz22vK5z2LcKEdg16Yv4FFneEL1zg9ojd", /* main-index: 0*/
-            "t3cL9AucCajm3HXDhb5jBnJK2vapVoXsop3", /* main-index: 1*/
-            "t3fqvkzrrNaMcamkQMwAyHRjfDdM2xQvDTR", /* main-index: 2*/
-            "t3TgZ9ZT2CTSK44AnUPi6qeNaHa2eC7pUyF", /* main-index: 3*/
-            "t3SpkcPQPfuRYHsP5vz3Pv86PgKo5m9KVmx", /* main-index: 4*/
-            "t3Xt4oQMRPagwbpQqkgAViQgtST4VoSWR6S", /* main-index: 5*/
-            "t3ayBkZ4w6kKXynwoHZFUSSgXRKtogTXNgb", /* main-index: 6*/
-            "t3adJBQuaa21u7NxbR8YMzp3km3TbSZ4MGB", /* main-index: 7*/
-            "t3K4aLYagSSBySdrfAGGeUd5H9z5Qvz88t2", /* main-index: 8*/
-            "t3RYnsc5nhEvKiva3ZPhfRSk7eyh1CrA6Rk", /* main-index: 9*/
-            "t3Ut4KUq2ZSMTPNE67pBU5LqYCi2q36KpXQ", /* main-index: 10*/
-            "t3ZnCNAvgu6CSyHm1vWtrx3aiN98dSAGpnD", /* main-index: 11*/
-            "t3fB9cB3eSYim64BS9xfwAHQUKLgQQroBDG", /* main-index: 12*/
-            "t3cwZfKNNj2vXMAHBQeewm6pXhKFdhk18kD", /* main-index: 13*/
-            "t3YcoujXfspWy7rbNUsGKxFEWZqNstGpeG4", /* main-index: 14*/
-            "t3bLvCLigc6rbNrUTS5NwkgyVrZcZumTRa4", /* main-index: 15*/
-            "t3VvHWa7r3oy67YtU4LZKGCWa2J6eGHvShi", /* main-index: 16*/
-            "t3eF9X6X2dSo7MCvTjfZEzwWrVzquxRLNeY", /* main-index: 17*/
-            "t3esCNwwmcyc8i9qQfyTbYhTqmYXZ9AwK3X", /* main-index: 18*/
-            "t3M4jN7hYE2e27yLsuQPPjuVek81WV3VbBj", /* main-index: 19*/
-            "t3gGWxdC67CYNoBbPjNvrrWLAWxPqZLxrVY", /* main-index: 20*/
-            "t3LTWeoxeWPbmdkUD3NWBquk4WkazhFBmvU", /* main-index: 21*/
-            "t3P5KKX97gXYFSaSjJPiruQEX84yF5z3Tjq", /* main-index: 22*/
-            "t3f3T3nCWsEpzmD35VK62JgQfFig74dV8C9", /* main-index: 23*/
-            "t3Rqonuzz7afkF7156ZA4vi4iimRSEn41hj", /* main-index: 24*/
-            "t3fJZ5jYsyxDtvNrWBeoMbvJaQCj4JJgbgX", /* main-index: 25*/
-            "t3Pnbg7XjP7FGPBUuz75H65aczphHgkpoJW", /* main-index: 26*/
-            "t3WeKQDxCijL5X7rwFem1MTL9ZwVJkUFhpF", /* main-index: 27*/
-            "t3Y9FNi26J7UtAUC4moaETLbMo8KS1Be6ME", /* main-index: 28*/
-            "t3aNRLLsL2y8xcjPheZZwFy3Pcv7CsTwBec", /* main-index: 29*/
-            "t3gQDEavk5VzAAHK8TrQu2BWDLxEiF1unBm", /* main-index: 30*/
-            "t3Rbykhx1TUFrgXrmBYrAJe2STxRKFL7G9r", /* main-index: 31*/
-            "t3aaW4aTdP7a8d1VTE1Bod2yhbeggHgMajR", /* main-index: 32*/
-            "t3YEiAa6uEjXwFL2v5ztU1fn3yKgzMQqNyo", /* main-index: 33*/
-            "t3g1yUUwt2PbmDvMDevTCPWUcbDatL2iQGP", /* main-index: 34*/
-            "t3dPWnep6YqGPuY1CecgbeZrY9iUwH8Yd4z", /* main-index: 35*/
-            "t3QRZXHDPh2hwU46iQs2776kRuuWfwFp4dV", /* main-index: 36*/
-            "t3enhACRxi1ZD7e8ePomVGKn7wp7N9fFJ3r", /* main-index: 37*/
-            "t3PkLgT71TnF112nSwBToXsD77yNbx2gJJY", /* main-index: 38*/
-            "t3LQtHUDoe7ZhhvddRv4vnaoNAhCr2f4oFN", /* main-index: 39*/
-            "t3fNcdBUbycvbCtsD2n9q3LuxG7jVPvFB8L", /* main-index: 40*/
-            "t3dKojUU2EMjs28nHV84TvkVEUDu1M1FaEx", /* main-index: 41*/
-            "t3aKH6NiWN1ofGd8c19rZiqgYpkJ3n679ME", /* main-index: 42*/
-            "t3MEXDF9Wsi63KwpPuQdD6by32Mw2bNTbEa", /* main-index: 43*/
-            "t3WDhPfik343yNmPTqtkZAoQZeqA83K7Y3f", /* main-index: 44*/
-            "t3PSn5TbMMAEw7Eu36DYctFezRzpX1hzf3M", /* main-index: 45*/
-            "t3R3Y5vnBLrEn8L6wFjPjBLnxSUQsKnmFpv", /* main-index: 46*/
-            "t3Pcm737EsVkGTbhsu2NekKtJeG92mvYyoN", /* main-index: 47*/
-        };
+        nChainSupplyCheckpointHeight = 0;
+        nChainSupplyCheckpointTotalSupply = 0;
+        nChainSupplyCheckpointTransparentValue = 0;
+        nChainSupplyCheckpointSproutValue = 0;
+        nChainSupplyCheckpointSaplingValue = 0;
+        nChainSupplyCheckpointOrchardValue = 0;
+        nChainSupplyCheckpointLockboxValue = 0;
+        hashChainSupplyCheckpointBlock.SetNull();
+        // ReweCoin: no founders reward on this chain. vFoundersRewardAddress
+        // intentionally empty — safe because miner.cpp no longer calls
+        // GetFoundersRewardScriptAtHeight/GetFoundersRewardAddressAtHeight.
+        vFoundersRewardAddress = {};
 
         assert(vFoundersRewardAddress.size() <= consensus.GetLastFoundersRewardBlockHeight(0));
     }
@@ -541,11 +467,11 @@ public:
         // guarantees the first 2 characters, when base58 encoded, are "ST"
         keyConstants.base58Prefixes[ZCSPENDING_KEY]     = {0xAC,0x08};
 
-        keyConstants.bech32HRPs[SAPLING_PAYMENT_ADDRESS]      = "ztestsapling";
-        keyConstants.bech32HRPs[SAPLING_FULL_VIEWING_KEY]     = "zviewtestsapling";
-        keyConstants.bech32HRPs[SAPLING_INCOMING_VIEWING_KEY] = "zivktestsapling";
-        keyConstants.bech32HRPs[SAPLING_EXTENDED_SPEND_KEY]   = "secret-extended-key-test";
-        keyConstants.bech32HRPs[SAPLING_EXTENDED_FVK]         = "zxviewtestsapling";
+        keyConstants.bech32HRPs[SAPLING_PAYMENT_ADDRESS]      = "rwtestsapling";
+        keyConstants.bech32HRPs[SAPLING_FULL_VIEWING_KEY]     = "rwviewtestsapling";
+        keyConstants.bech32HRPs[SAPLING_INCOMING_VIEWING_KEY] = "rwivktestsapling";
+        keyConstants.bech32HRPs[SAPLING_EXTENDED_SPEND_KEY]   = "secret-extended-key-rewecoin-test";
+        keyConstants.bech32HRPs[SAPLING_EXTENDED_FVK]         = "rwxviewtestsapling";
 
         keyConstants.bech32mHRPs[TEX_ADDRESS]                 = "textest";
 
@@ -755,10 +681,10 @@ public:
         // Hardcoded fallback value for the Sprout shielded value pool balance
         // for nodes that have not reindexed since the introduction of monitoring
         // in #2795.
-        nSproutValuePoolCheckpointHeight = 440329;
-        nSproutValuePoolCheckpointBalance = 40000029096803;
+        nSproutValuePoolCheckpointHeight = 0;
+        nSproutValuePoolCheckpointBalance = 0;
         fZIP209Enabled = true;
-        hashSproutValuePoolCheckpointBlock = uint256S("000a95d08ba5dcbabe881fc6471d11807bcca7df5f1795c99f3ec4580db4279b");
+        hashSproutValuePoolCheckpointBlock = uint256S("0148188b2279922a528736172d8205efb4d23b3b351e72a4f352d25f393d34f1");
 
         // Chain supply checkpoint at NU6.1 activation (height 3536500).
         nChainSupplyCheckpointHeight = 3536500;
@@ -872,11 +798,11 @@ public:
         keyConstants.base58Prefixes[ZCVIEWING_KEY]      = {0xA8,0xAC,0x0C};
         keyConstants.base58Prefixes[ZCSPENDING_KEY]     = {0xAC,0x08};
 
-        keyConstants.bech32HRPs[SAPLING_PAYMENT_ADDRESS]      = "zregtestsapling";
-        keyConstants.bech32HRPs[SAPLING_FULL_VIEWING_KEY]     = "zviewregtestsapling";
-        keyConstants.bech32HRPs[SAPLING_INCOMING_VIEWING_KEY] = "zivkregtestsapling";
-        keyConstants.bech32HRPs[SAPLING_EXTENDED_SPEND_KEY]   = "secret-extended-key-regtest";
-        keyConstants.bech32HRPs[SAPLING_EXTENDED_FVK]         = "zxviewregtestsapling";
+        keyConstants.bech32HRPs[SAPLING_PAYMENT_ADDRESS]      = "rwregtestsapling";
+        keyConstants.bech32HRPs[SAPLING_FULL_VIEWING_KEY]     = "rwviewregtestsapling";
+        keyConstants.bech32HRPs[SAPLING_INCOMING_VIEWING_KEY] = "rwivkregtestsapling";
+        keyConstants.bech32HRPs[SAPLING_EXTENDED_SPEND_KEY]   = "secret-extended-key-rewecoin-regtest";
+        keyConstants.bech32HRPs[SAPLING_EXTENDED_FVK]         = "rwxviewregtestsapling";
 
         keyConstants.bech32mHRPs[TEX_ADDRESS]                 = "texregtest";
 
