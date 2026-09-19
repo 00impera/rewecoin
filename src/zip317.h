@@ -19,7 +19,7 @@ static const size_t P2PKH_STANDARD_INPUT_SIZE = 150;
 static const size_t P2PKH_STANDARD_OUTPUT_SIZE = 34;
 
 // Constants for block template construction.
-static const int64_t WEIGHT_RATIO_SCALE = INT64_C(10000000000000000);
+static const int64_t WEIGHT_RATIO_SCALE = INT64_C(100000000000000000);
 static const int64_t WEIGHT_RATIO_CAP = 4;
 static const size_t DEFAULT_BLOCK_UNPAID_ACTION_LIMIT = 0;
 
