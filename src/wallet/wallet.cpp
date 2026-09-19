@@ -2787,7 +2787,7 @@ static void OrchardNoteCommitmentTreeDiverged(int nHeight)
         nHeight);
     uiInterface.ThreadSafeMessageBox(
         _("Error: The wallet's Orchard note commitment tree has become inconsistent "
-          "with the block chain. The zcashd node will now shut down; please restart "
+          "with the block chain. The rewecoind node will now shut down; please restart "
           "with the -rescan option to rebuild the wallet's Orchard note commitment "
           "tree."),
         "", CClientUIInterface::MSG_ERROR);

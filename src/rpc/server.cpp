@@ -284,11 +284,11 @@ UniValue stop(const UniValue& params, bool fHelp)
     if (fHelp || params.size() > 1)
         throw runtime_error(
             "stop\n"
-            "\nStop Zcash server.");
+            "\nStop ReweCoin server.");
     // Event loop will exit after current HTTP requests have been handled, so
     // this reply will get back to the client.
     StartShutdown();
-    return "Zcash server stopping";
+    return "ReweCoin server stopping";
 }
 
 /**
@@ -572,7 +572,7 @@ std::string experimentalDisabledHelpMsg(const std::string& rpc, const std::vecto
         }
     }
     return "\nWARNING: " + rpc + " is disabled.\n" +
-        "To enable it, restart zcashd with the following command line options:\n"
+        "To enable it, restart rewecoind with the following command line options:\n"
         + cmd + "\n\n" +
         "Alternatively add these two lines to the zcash.conf file:\n\n"
         + config;

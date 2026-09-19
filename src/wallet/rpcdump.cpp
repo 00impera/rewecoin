@@ -247,7 +247,7 @@ UniValue importaddress(const UniValue& params, bool fHelp)
         std::vector<unsigned char> data(ParseHex(params[0].get_str()));
         ImportScript(CScript(data.begin(), data.end()), strLabel, fP2SH);
     } else {
-        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid Zcash address or script");
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid ReweCoin address or script");
     }
 
     if (fRescan)
@@ -399,7 +399,7 @@ UniValue importwallet_impl(const UniValue& params, bool fImportZKeys)
         if (vstr.size() < 2)
             continue;
 
-        // Let's see if the address is a valid Zcash spending key
+        // Let's see if the address is a valid ReweCoin spending key
         if (fImportZKeys) {
             auto spendingkey = keyIO.DecodeSpendingKey(vstr[0]);
             int64_t nTime = DecodeDumpTime(vstr[1]);
@@ -418,7 +418,7 @@ UniValue importwallet_impl(const UniValue& params, bool fImportZKeys)
                 continue;
             } else {
                 LogPrint("zrpc", "Importing detected an error: invalid spending key. Trying as a transparent key...\n");
-                // Not a valid spending key, so carry on and see if it's a Zcash style t-address.
+                // Not a valid spending key, so carry on and see if it's a ReweCoin style t-address.
             }
         }
 
@@ -507,7 +507,7 @@ UniValue dumpprivkey(const UniValue& params, bool fHelp)
     std::string strAddress = params[0].get_str();
     CTxDestination dest = keyIO.DecodeDestination(strAddress);
     if (!IsValidDestination(dest)) {
-        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid Zcash address");
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid ReweCoin address");
     }
     const CKeyID *keyID = std::get_if<CKeyID>(&dest);
     if (!keyID) {
@@ -536,7 +536,7 @@ UniValue z_exportwallet(const UniValue& params, bool fHelp)
             "z_exportwallet \"filename\"\n"
             "\nExports all wallet keys, for taddr and zaddr, in a human-readable format.  Overwriting an existing file is not permitted.\n"
             "\nArguments:\n"
-            "1. \"filename\"    (string, required) The filename, saved in folder set by zcashd -exportdir option\n"
+            "1. \"filename\"    (string, required) The filename, saved in folder set by rewecoind -exportdir option\n"
             "\nResult:\n"
             "\"path\"           (string) The full path of the destination file\n"
             "\nExamples:\n"
@@ -555,7 +555,7 @@ UniValue z_exportwallet(const UniValue& params, bool fHelp)
         throw JSONRPCError(RPC_INTERNAL_ERROR, e.what());
     }
     if (exportdir.empty()) {
-        throw JSONRPCError(RPC_WALLET_ERROR, "Cannot export wallet until the zcashd -exportdir option has been set");
+        throw JSONRPCError(RPC_WALLET_ERROR, "Cannot export wallet until the rewecoind -exportdir option has been set");
     }
     std::string unclean = params[0].get_str();
     std::string clean = SanitizeFilename(unclean);
@@ -589,7 +589,7 @@ UniValue z_exportwallet(const UniValue& params, bool fHelp)
     KeyIO keyIO(Params());
 
     // produce output
-    file << strprintf("# Wallet dump created by Zcash %s\n", CLIENT_BUILD);
+    file << strprintf("# Wallet dump created by ReweCoin %s\n", CLIENT_BUILD);
     file << strprintf("# * Created on %s\n", EncodeDumpTime(GetTime()));
     file << strprintf("# * Best block at time of backup was %i (%s),\n", chainActive.Height(), chainActive.Tip()->GetBlockHash().ToString());
     file << strprintf("#   mined on %s\n", EncodeDumpTime(chainActive.Tip()->GetBlockTime()));
