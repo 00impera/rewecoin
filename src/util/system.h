@@ -78,9 +78,9 @@ fs::path GetConfigFile(const std::string& confPath);
 fs::path GetPidFile();
 void CreatePidFile(const fs::path &path, pid_t pid);
 #endif
-class missing_zcash_conf : public std::runtime_error {
+class missing_rewecoin_conf : public std::runtime_error {
 public:
-    missing_zcash_conf() : std::runtime_error("Missing zcash.conf") { }
+    missing_rewecoin_conf() : std::runtime_error("Missing rewecoin.conf") { }
 };
 void ReadConfigFile(const std::string& confPath, std::map<std::string, std::string>& mapSettingsRet, std::map<std::string, std::vector<std::string> >& mapMultiSettingsRet);
 #ifdef WIN32

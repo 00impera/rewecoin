@@ -369,7 +369,7 @@ namespace Consensus {
 
     CAmount Params::GetBlockSubsidy(int nHeight) const
     {
-        CAmount nSubsidy = 12.5 * COIN;
+        CAmount nSubsidy = 100 * COIN;
 
         // Mining slow start
         // The subsidy is ramped up linearly, skipping the middle payout of

@@ -73,7 +73,7 @@
 
 using namespace std;
 
-const char * const BITCOIN_CONF_FILENAME = "zcash.conf";
+const char * const BITCOIN_CONF_FILENAME = "rewecoin.conf";
 const char * const BITCOIN_PID_FILENAME = "zcashd.pid";
 
 CCriticalSection cs_args;
@@ -376,7 +376,7 @@ void ReadConfigFile(const std::string& confPath,
 {
     fs::ifstream streamConfig(GetConfigFile(confPath));
     if (!streamConfig.good())
-        throw missing_zcash_conf();
+        throw missing_rewecoin_conf();
 
     set<string> setOptions;
     setOptions.insert("*");

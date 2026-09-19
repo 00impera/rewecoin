@@ -104,7 +104,7 @@ bool AppInit(int argc, char* argv[])
         try
         {
             ReadConfigFile(GetArg("-conf", BITCOIN_CONF_FILENAME), mapArgs, mapMultiArgs);
-        } catch (const missing_zcash_conf& e) {
+        } catch (const missing_rewecoin_conf& e) {
             auto confFilename = GetArg("-conf", BITCOIN_CONF_FILENAME);
             fprintf(stderr,
                 (_("Before starting rewecoind, you need to create a configuration file:\n"

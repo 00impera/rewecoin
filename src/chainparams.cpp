@@ -87,10 +87,10 @@ class CMainParams : public CChainParams {
 public:
     CMainParams() {
         keyConstants.strNetworkID = "main";
-        strCurrencyUnits = "ZEC";
-        keyConstants.bip44CoinType = 133; // As registered in https://github.com/satoshilabs/slips/blob/master/slip-0044.md
+        strCurrencyUnits = "RWC";
+        keyConstants.bip44CoinType = 12533; // ReweCoin — not registered in SLIP-44, chosen to avoid collision with Zcash's 133
         consensus.fCoinbaseMustBeShielded = true;
-        consensus.nSubsidySlowStartInterval = 20000;
+        consensus.nSubsidySlowStartInterval = 0;
         consensus.nPreBlossomSubsidyHalvingInterval = Consensus::PRE_BLOSSOM_HALVING_INTERVAL;
         consensus.nPostBlossomSubsidyHalvingInterval = POST_BLOSSOM_HALVING_INTERVAL(Consensus::PRE_BLOSSOM_HALVING_INTERVAL);
         consensus.nMajorityEnforceBlockUpgrade = 750;
@@ -146,10 +146,12 @@ public:
 
         consensus.nFundingPeriodLength = consensus.nPostBlossomSubsidyHalvingInterval / 48;
 
-        // guarantees the first 2 characters, when base58 encoded, are "t1"
-        keyConstants.base58Prefixes[PUBKEY_ADDRESS]     = {0x0D,0x84};
-        // guarantees the first 2 characters, when base58 encoded, are "t3"
-        keyConstants.base58Prefixes[SCRIPT_ADDRESS]     = {0x0D,0x89};
+        // ReweCoin: verified against both zero-payload and 0xFF-payload extremes
+        // to guarantee the first character, when base58 encoded, is "r"
+        keyConstants.base58Prefixes[PUBKEY_ADDRESS]     = {0x06,0x41};
+        // ReweCoin: verified against both zero-payload and 0xFF-payload extremes
+        // to guarantee the first character, when base58 encoded, is "s"
+        keyConstants.base58Prefixes[SCRIPT_ADDRESS]     = {0x06,0x61};
         // the first character, when base58 encoded, is "5" or "K" or "L" (as in Bitcoin)
         keyConstants.base58Prefixes[SECRET_KEY]         = {0x80};
         // do not rely on these BIP32 prefixes; they are not specified and may change
@@ -392,10 +394,10 @@ class CTestNetParams : public CChainParams {
 public:
     CTestNetParams() {
         keyConstants.strNetworkID = "test";
-        strCurrencyUnits = "TAZ";
+        strCurrencyUnits = "TRWC";
         keyConstants.bip44CoinType = 1;
         consensus.fCoinbaseMustBeShielded = true;
-        consensus.nSubsidySlowStartInterval = 20000;
+        consensus.nSubsidySlowStartInterval = 0;
         consensus.nPreBlossomSubsidyHalvingInterval = Consensus::PRE_BLOSSOM_HALVING_INTERVAL;
         consensus.nPostBlossomSubsidyHalvingInterval = POST_BLOSSOM_HALVING_INTERVAL(Consensus::PRE_BLOSSOM_HALVING_INTERVAL);
         consensus.nMajorityEnforceBlockUpgrade = 51;
@@ -671,11 +673,10 @@ public:
 
         checkpointData = (CCheckpointData) {
             boost::assign::map_list_of
-            (0, consensus.hashGenesisBlock)
-            (38000, uint256S("0x001e9a2d2e2892b88e9998cf7b079b41d59dd085423a921fe8386cecc42287b8")),
-            1486897419,  // * UNIX timestamp of last checkpoint block
-            47163,       // * total number of transactions between genesis and last checkpoint
-            715          //   total number of tx / (checkpoint block height / (24 * 24))
+            (0, consensus.hashGenesisBlock),
+            0,  // * UNIX timestamp of last checkpoint block
+            0,  // * total number of transactions between genesis and last checkpoint
+            0   //   total number of tx / (checkpoint block height / (24 * 24))
         };
 
         // Hardcoded fallback value for the Sprout shielded value pool balance
