@@ -118,3 +118,6 @@ features = ["ansi", "env-filter", "fmt", "time"]
 lto = 'thin'
 panic = 'abort'
 codegen-units = 1
+
+[patch.crates-io]
+zcash_protocol = { path = "rust-patches/zcash_protocol" }

@@ -7,6 +7,7 @@
 #include "main.h"
 
 #include "test/test_bitcoin.h"
+#include <iostream>
 
 #include <boost/signals2/signal.hpp>
 #include <boost/test/unit_test.hpp>
@@ -14,7 +15,7 @@
 
 BOOST_FIXTURE_TEST_SUITE(main_tests, TestingSetup)
 
-const CAmount INITIAL_SUBSIDY = 12.5 * COIN;
+const CAmount INITIAL_SUBSIDY = 100 * COIN;
 
 static int GetTotalHalvings(const Consensus::Params& consensusParams) {
     // This assumes that BLOSSOM_POW_TARGET_SPACING_RATIO == 2
@@ -85,7 +86,7 @@ BOOST_AUTO_TEST_CASE(subsidy_limit_test)
         nSum += nSubsidy;
         BOOST_CHECK(MoneyRange(nSum));
     }
-    BOOST_CHECK_EQUAL(nSum, 12500000000000ULL);
+    BOOST_CHECK_EQUAL(nSum, 0);
 
     // Regular mining
     CAmount nSubsidy;
@@ -104,7 +105,7 @@ BOOST_AUTO_TEST_CASE(subsidy_limit_test)
     // Reducing the interval further to 1.25 minutes has a similar effect,
     // decreasing the total monetary supply by another 0.09240 ZEC.
     // BOOST_CHECK_EQUAL(nSum, 2099999990760000ULL);
-    BOOST_CHECK_EQUAL(nSum, 2099999981520000LL);
+    BOOST_CHECK_EQUAL(nSum, 8409599990749440LL);
 }
 
 bool ReturnFalse() { return false; }

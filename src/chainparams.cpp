@@ -968,6 +968,10 @@ void SelectParams(const std::string& network)
 // Block height must be >0 and <=last founders reward block height
 // Index variable i ranges from 0 - (vFoundersRewardAddress.size()-1)
 std::string CChainParams::GetFoundersRewardAddressAtHeight(int nHeight) const {
+    if (vFoundersRewardAddress.empty()) {
+        throw std::runtime_error(
+            "GetFoundersRewardAddressAtHeight: no founders reward addresses configured for this chain");
+    }
     int preBlossomMaxHeight = consensus.GetLastFoundersRewardBlockHeight(0);
     // zip208
     // FounderAddressAdjustedHeight(height) :=
