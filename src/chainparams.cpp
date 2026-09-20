@@ -89,7 +89,7 @@ public:
         keyConstants.strNetworkID = "main";
         strCurrencyUnits = "RWC";
         keyConstants.bip44CoinType = 12533; // ReweCoin — not registered in SLIP-44, chosen to avoid collision with Zcash's 133
-        consensus.fCoinbaseMustBeShielded = true;
+        consensus.fCoinbaseMustBeShielded = false;
         consensus.nSubsidySlowStartInterval = 0;
         consensus.nPreBlossomSubsidyHalvingInterval = Consensus::PRE_BLOSSOM_HALVING_INTERVAL;
         consensus.nPostBlossomSubsidyHalvingInterval = POST_BLOSSOM_HALVING_INTERVAL(Consensus::PRE_BLOSSOM_HALVING_INTERVAL);
@@ -396,7 +396,7 @@ public:
         keyConstants.strNetworkID = "test";
         strCurrencyUnits = "TRWC";
         keyConstants.bip44CoinType = 1;
-        consensus.fCoinbaseMustBeShielded = true;
+        consensus.fCoinbaseMustBeShielded = false;
         consensus.nSubsidySlowStartInterval = 0;
         consensus.nPreBlossomSubsidyHalvingInterval = Consensus::PRE_BLOSSOM_HALVING_INTERVAL;
         consensus.nPostBlossomSubsidyHalvingInterval = POST_BLOSSOM_HALVING_INTERVAL(Consensus::PRE_BLOSSOM_HALVING_INTERVAL);

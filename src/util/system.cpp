@@ -247,7 +247,7 @@ fs::path GetDefaultDataDir()
     return pathRet / "Zcash";
 #else
     // Unix
-    return pathRet / ".zcash";
+    return pathRet / ".rewecoin";
 #endif
 #endif
 }
@@ -282,7 +282,7 @@ static fs::path ZC_GetDefaultBaseParamsDir()
     return pathRet / "ZcashParams";
 #else
     // Unix
-    return pathRet / ".zcash-params";
+    return pathRet / ".rewecoin-params";
 #endif
 #endif
 }
