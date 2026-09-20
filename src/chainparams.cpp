@@ -338,9 +338,8 @@ public:
 
         vFixedSeeds.clear();
         vSeeds.clear();
-        vSeeds.push_back("seed1.rewecoin.com");
-        vSeeds.push_back("seed2.rewecoin.com");
-
+        vSeeds.push_back(CDNSSeedData("seed1", "seed1.rewecoin.com"));
+        vSeeds.push_back(CDNSSeedData("seed2", "seed2.rewecoin.com"));
         fMiningRequiresPeers = true;
         fDefaultConsistencyChecks = false;
         fRequireStandard = true;
