@@ -3,7 +3,7 @@
 /// The mainnet coin type for ZEC, as defined by [SLIP 44].
 ///
 /// [SLIP 44]: https://github.com/satoshilabs/slips/blob/master/slip-0044.md
-pub const COIN_TYPE: u32 = 133;
+pub const COIN_TYPE: u32 = 12533;
 
 /// The HRP for a Bech32-encoded mainnet Sapling [`ExtendedSpendingKey`].
 ///
@@ -11,7 +11,7 @@ pub const COIN_TYPE: u32 = 133;
 ///
 /// [`ExtendedSpendingKey`]: https://docs.rs/sapling-crypto/latest/sapling_crypto/zip32/struct.ExtendedSpendingKey.html
 /// [ZIP 32]: https://github.com/zcash/zips/blob/main/zips/zip-0032.rst
-pub const HRP_SAPLING_EXTENDED_SPENDING_KEY: &str = "secret-extended-key-main";
+pub const HRP_SAPLING_EXTENDED_SPENDING_KEY: &str = "secret-extended-key-rewecoin";
 
 /// The HRP for a Bech32-encoded mainnet [`ExtendedFullViewingKey`].
 ///
@@ -19,7 +19,7 @@ pub const HRP_SAPLING_EXTENDED_SPENDING_KEY: &str = "secret-extended-key-main";
 ///
 /// [`ExtendedFullViewingKey`]: https://docs.rs/sapling-crypto/latest/sapling_crypto/zip32/struct.ExtendedFullViewingKey.html
 /// [ZIP 32]: https://github.com/zcash/zips/blob/main/zips/zip-0032.rst
-pub const HRP_SAPLING_EXTENDED_FULL_VIEWING_KEY: &str = "zxviews";
+pub const HRP_SAPLING_EXTENDED_FULL_VIEWING_KEY: &str = "rwxviews";
 
 /// The HRP for a Bech32-encoded mainnet Sapling [`PaymentAddress`].
 ///
@@ -27,7 +27,7 @@ pub const HRP_SAPLING_EXTENDED_FULL_VIEWING_KEY: &str = "zxviews";
 ///
 /// [`PaymentAddress`]: https://docs.rs/sapling-crypto/latest/sapling_crypto/struct.PaymentAddress.html
 /// [Zcash Protocol Specification]: https://github.com/zcash/zips/blob/main/rendered/protocol/protocol.pdf
-pub const HRP_SAPLING_PAYMENT_ADDRESS: &str = "zs";
+pub const HRP_SAPLING_PAYMENT_ADDRESS: &str = "rws";
 
 /// The prefix for a Base58Check-encoded mainnet Sprout address.
 ///
@@ -46,12 +46,12 @@ pub const B58_SECRET_KEY_PREFIX: [u8; 1] = [0x80];
 /// The prefix for a Base58Check-encoded mainnet [`PublicKeyHash`].
 ///
 /// [`PublicKeyHash`]: https://docs.rs/zcash_transparent/latest/zcash_transparent/address/enum.TransparentAddress.html
-pub const B58_PUBKEY_ADDRESS_PREFIX: [u8; 2] = [0x1c, 0xb8];
+pub const B58_PUBKEY_ADDRESS_PREFIX: [u8; 2] = [0x06, 0x41];
 
 /// The prefix for a Base58Check-encoded mainnet [`ScriptHash`].
 ///
 /// [`ScriptHash`]: https://docs.rs/zcash_transparent/latest/zcash_transparent/address/enum.TransparentAddress.html
-pub const B58_SCRIPT_ADDRESS_PREFIX: [u8; 2] = [0x1c, 0xbd];
+pub const B58_SCRIPT_ADDRESS_PREFIX: [u8; 2] = [0x06, 0x61];
 
 /// The HRP for a Bech32m-encoded mainnet [ZIP 320] TEX address.
 ///
@@ -63,18 +63,18 @@ pub const HRP_TEX_ADDRESS: &str = "tex";
 /// Defined in [ZIP 316][zip-0316].
 ///
 /// [zip-0316]: https://zips.z.cash/zip-0316
-pub const HRP_UNIFIED_ADDRESS: &str = "u";
+pub const HRP_UNIFIED_ADDRESS: &str = "rwu";
 
 /// The HRP for a Bech32m-encoded mainnet Unified FVK.
 ///
 /// Defined in [ZIP 316][zip-0316].
 ///
 /// [zip-0316]: https://zips.z.cash/zip-0316
-pub const HRP_UNIFIED_FVK: &str = "uview";
+pub const HRP_UNIFIED_FVK: &str = "rwuview";
 
 /// The HRP for a Bech32m-encoded mainnet Unified IVK.
 ///
 /// Defined in [ZIP 316][zip-0316].
 ///
 /// [zip-0316]: https://zips.z.cash/zip-0316
-pub const HRP_UNIFIED_IVK: &str = "uivk";
+pub const HRP_UNIFIED_IVK: &str = "rwuivk";

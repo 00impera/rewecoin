@@ -165,11 +165,11 @@ def _verify_address_diversity(rpc: ZcashRPC) -> list[VerificationError]:
         z_addrs = rpc.z_listaddresses()
         for addr in z_addrs:
             # Sprout addresses start with "zc" (on regtest, "zt" for testnet)
-            # Sapling addresses start with "zs" (on regtest, also "ztestsapling")
+            # Sapling addresses start with "zs" (on regtest, also "rwtestsapling")
             # This is a rough heuristic; the actual prefix depends on network.
             if addr.startswith("zc") or addr.startswith("zt"):
                 found_pools.add("sprout")
-            elif addr.startswith("zs"):
+            elif addr.startswith("rws"):
                 found_pools.add("sapling")
             # Unified addresses have a different format; detect separately
     except Exception:
