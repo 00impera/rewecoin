@@ -74,7 +74,7 @@
 using namespace std;
 
 const char * const BITCOIN_CONF_FILENAME = "rewecoin.conf";
-const char * const BITCOIN_PID_FILENAME = "zcashd.pid";
+const char * const BITCOIN_PID_FILENAME = "rewecoind.pid";
 
 CCriticalSection cs_args;
 map<string, string> mapArgs;
