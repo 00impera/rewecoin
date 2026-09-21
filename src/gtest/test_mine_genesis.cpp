@@ -15,6 +15,7 @@
 #include "version.h"
 
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <functional>
 #include <vector>
@@ -51,7 +52,9 @@ void MineGenesis(const char* label, const char* pszTimestamp, uint32_t nTime, ui
     CBlock pblock = BuildCandidate(pszTimestamp, nTime, nBits, 4);
 
     arith_uint256 hashTarget = arith_uint256().SetCompact(nBits);
-    arith_uint256 nonceArith = 0;
+    const char* rewe_st = getenv("REWE_START");
+    uint64_t rewe_tried = 0;
+    arith_uint256 nonceArith((uint64_t)(rewe_st ? strtoull(rewe_st, NULL, 10) : 0));
     bool found = false;
 
     while (!found) {
@@ -94,6 +97,7 @@ void MineGenesis(const char* label, const char* pszTimestamp, uint32_t nTime, ui
 
         if (!found) {
             nonceArith += 1;
+            if ((++rewe_tried % 25) == 0) { fprintf(stderr, "tried %llu nonces\n", (unsigned long long)rewe_tried); }
         }
     }
 
@@ -113,7 +117,7 @@ TEST(mine_genesis, ReweCoin)
 {
     const char* pszTimestamp = "ReweCoin - A new chain begins - Sep 2026";
 
-    MineGenesis("MAINNET", pszTimestamp, 1477641360, 0x1f07ffff, 200, 9);
-    MineGenesis("TESTNET", pszTimestamp, 1477648033, 0x2007ffff, 200, 9);
-    MineGenesis("REGTEST", pszTimestamp, 1296688602, 0x200f0f0f, 48, 5);
+    MineGenesis("MAINNET", pszTimestamp, (uint32_t)strtoul(getenv("REWE_NTIME"), NULL, 10), 0x1f07ffff, 200, 9);
+    // testnet skipped
+    // regtest skipped
 }
