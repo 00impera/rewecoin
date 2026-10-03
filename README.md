@@ -1,73 +1,77 @@
-# ReweCoin Testnet
+# ReweCoin (mainnet)
 
-ReweCoin is a Zcash fork running its own independent testnet, actively mining.
+ReweCoin is a Zcash 6.0.0 fork with its own independent chain.
 
-- Current height: 605+ (growing continuously, active mining)
-- Client: `/ReweCoin:1.0.0/`
-- Public seed node: `49.13.62.211:28333`
-- Repo: https://github.com/00impera/rewecoin-testnet
+- Algorithm: Equihash (200,9)
+- Target block spacing: 75 s (Blossom active from height 1)
+- P2P port: 28233
+- RPC port: 8232 (local use only, never expose it)
+- Genesis block hash: `0006ef5ee4ef99c294e020bf8398bb342648ce289bf748b9b11f27f4463f6d19`
+- Seeds (hardcoded): `seed1.rewecoin.com`, `seed2.rewecoin.com`
+- Branch: `master` (this branch is mainnet; `main` is an unrelated Foundry/Solidity project)
 
-## How to connect
+## Status
 
-### 1. Clone and build
+Early-stage network. At the time of writing it is run by a single operator and mining difficulty is at its floor. Do not treat it as a decentralized or production chain yet. Blocks can be produced much faster than the 75 s target if hashrate appears.
 
-git clone https://github.com/00impera/rewecoin-testnet.git
-cd rewecoin-testnet
-./zcutil/build.sh -j$(nproc)
+## Build
 
-The build takes 15-30 minutes depending on your machine's resources.
+Precompiled binaries are not provided. Build from source on a recent Linux (the reference build was made on Ubuntu 26.04).
 
-### 2. Create your own datadir and config
+    git clone https://github.com/00impera/rewecoin.git
+    cd rewecoin
+    ./zcutil/build.sh -j$(nproc)
 
-mkdir -p ~/.rewetestnet
+The build takes 15-30 minutes.
 
-Create the file ~/.rewetestnet/zcash.conf with this content:
+## Run a node
 
-testnet=1
-server=1
-listen=1
-rpcport=18233
-port=28333
-rpcuser=CHOOSE_A_USERNAME
-rpcpassword=CHOOSE_A_LONG_UNIQUE_PASSWORD
-addnode=49.13.62.211:28333
-gen=0
+    mkdir -p ~/.rewemainnet
+    cat > ~/.rewemainnet/rewecoin.conf <<CONF
+    server=1
+    listen=1
+    port=28233
+    rpcport=8232
+    rpcuser=CHOOSE_A_USERNAME
+    rpcpassword=CHOOSE_A_LONG_UNIQUE_PASSWORD
+    addnode=seed1.rewecoin.com:28233
+    addnode=seed2.rewecoin.com:28233
+    gen=0
+    CONF
 
-Important: rpcuser and rpcpassword are local, only for accessing your own node. Do not share them with anyone and do not use the example values.
+    ./src/rewecoind -datadir=$HOME/.rewemainnet -conf=$HOME/.rewemainnet/rewecoin.conf -printtoconsole
 
-### 3. Start the node
+rpcuser and rpcpassword are local, only for your own node. Do not reuse the example values.
 
-./src/rewecoind -testnet -datadir=$HOME/.rewetestnet -printtoconsole
+## Verify you are on the right chain
 
-The node will connect to the public seed and start syncing the chain.
+    CLI="./src/rewecoin-cli -datadir=$HOME/.rewemainnet -conf=$HOME/.rewemainnet/rewecoin.conf"
+    $CLI getblockhash 0
+    $CLI getblockcount
+    $CLI getpeerinfo
 
-### 4. Check sync progress
+`getblockhash 0` must return the genesis hash above. If it differs, you are not on this chain. `getblockcount` should keep increasing, and `getpeerinfo` should show at least one connection.
 
-In another terminal:
+## Mining (optional)
 
-./src/rewecoin-cli -testnet -datadir=$HOME/.rewetestnet getblockcount
-./src/rewecoin-cli -testnet -datadir=$HOME/.rewetestnet getpeerinfo
+Use a dedicated address, not an exchange or custodial address:
 
-The height should keep increasing until it catches up with the seed.
+    $CLI getnewaddress
 
-### 5. (Optional) Mine locally
+Add to rewecoin.conf, then restart:
 
-./src/rewecoin-cli -testnet -datadir=$HOME/.rewetestnet getnewaddress
+    mineraddress=YOUR_ADDRESS
+    gen=1
+    genproclimit=1
 
-Add the generated address to zcash.conf:
-
-mineraddress=GENERATED_ADDRESS
-gen=1
-genproclimit=1
-
-Restart the node.
+Coinbase outputs need 100 blocks of maturity before they can be spent.
 
 ## Known limitations
 
-- All consensus upgrades (Overwinter, Sapling, Blossom, Heartwood, Canopy, NU5) are active from height 1. It is not possible to test the actual transition between them, only their combined behavior.
-- Mined coinbase requires 100 blocks of maturity before it can be spent.
-- The testnet runs on a single known seed node. Resilience to network partitioning has not been tested.
+- Single-operator network, one effective seed host.
+- Difficulty floor: start with CPU mining and expect fast, irregular blocks.
+- All consensus upgrades are active from height 1, so upgrade transitions cannot be tested.
 
-## Reporting issues
+## Issues
 
-Open an issue on this repo, including relevant output from journalctl or -printtoconsole.
+Open an issue on this repo with relevant output from `-printtoconsole` or journalctl.
