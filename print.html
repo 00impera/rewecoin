@@ -36,7 +36,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-0ecb3ab4.js";
+            window.path_to_searchindex_js = "searchindex-398fce8a.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-943eab5d.js"></script>
@@ -175,56 +175,68 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="rewecoin-testnet"><a class="header" href="#rewecoin-testnet">ReweCoin Testnet</a></h1>
-<p>ReweCoin is a Zcash fork running its own independent testnet, actively mining.</p>
+                        <h1 id="rewecoin-mainnet"><a class="header" href="#rewecoin-mainnet">ReweCoin (mainnet)</a></h1>
+<p>ReweCoin is a Zcash 6.0.0 fork with its own independent chain.</p>
 <ul>
-<li>Current height: 605+ (growing continuously, active mining)</li>
-<li>Client: <code>/ReweCoin:1.0.0/</code></li>
-<li>Public seed node: <code>49.13.62.211:28333</code></li>
-<li>Repo: https://github.com/00impera/rewecoin-testnet</li>
+<li>Algorithm: Equihash (200,9)</li>
+<li>Target block spacing: 75 s (Blossom active from height 1)</li>
+<li>P2P port: 28233</li>
+<li>RPC port: 8232 (local use only, never expose it)</li>
+<li>Genesis block hash: <code>0006ef5ee4ef99c294e020bf8398bb342648ce289bf748b9b11f27f4463f6d19</code></li>
+<li>Seeds (hardcoded): <code>seed1.rewecoin.com</code>, <code>seed2.rewecoin.com</code></li>
+<li>Branch: <code>master</code> (this branch is mainnet; <code>main</code> is an unrelated Foundry/Solidity project)</li>
 </ul>
-<h2 id="how-to-connect"><a class="header" href="#how-to-connect">How to connect</a></h2>
-<h3 id="1-clone-and-build"><a class="header" href="#1-clone-and-build">1. Clone and build</a></h3>
-<p>git clone https://github.com/00impera/rewecoin-testnet.git
-cd rewecoin-testnet
-./zcutil/build.sh -j$(nproc)</p>
-<p>The build takes 15-30 minutes depending on your machine’s resources.</p>
-<h3 id="2-create-your-own-datadir-and-config"><a class="header" href="#2-create-your-own-datadir-and-config">2. Create your own datadir and config</a></h3>
-<p>mkdir -p ~/.rewetestnet</p>
-<p>Create the file ~/.rewetestnet/zcash.conf with this content:</p>
-<p>testnet=1
+<h2 id="status"><a class="header" href="#status">Status</a></h2>
+<p>Early-stage network. At the time of writing it is run by a single operator and mining difficulty is at its floor. Do not treat it as a decentralized or production chain yet. Blocks can be produced much faster than the 75 s target if hashrate appears.</p>
+<h2 id="build"><a class="header" href="#build">Build</a></h2>
+<p>Precompiled binaries are not provided. Build from source on a recent Linux (the reference build was made on Ubuntu 26.04).</p>
+<pre><code>git clone https://github.com/00impera/rewecoin.git
+cd rewecoin
+./zcutil/build.sh -j$(nproc)
+</code></pre>
+<p>The build takes 15-30 minutes.</p>
+<h2 id="run-a-node"><a class="header" href="#run-a-node">Run a node</a></h2>
+<pre><code>mkdir -p ~/.rewemainnet
+cat &gt; ~/.rewemainnet/rewecoin.conf &lt;&lt;CONF
 server=1
 listen=1
-rpcport=18233
-port=28333
+port=28233
+rpcport=8232
 rpcuser=CHOOSE_A_USERNAME
 rpcpassword=CHOOSE_A_LONG_UNIQUE_PASSWORD
-addnode=49.13.62.211:28333
-gen=0</p>
-<p>Important: rpcuser and rpcpassword are local, only for accessing your own node. Do not share them with anyone and do not use the example values.</p>
-<h3 id="3-start-the-node"><a class="header" href="#3-start-the-node">3. Start the node</a></h3>
-<p>./src/rewecoind -testnet -datadir=$HOME/.rewetestnet -printtoconsole</p>
-<p>The node will connect to the public seed and start syncing the chain.</p>
-<h3 id="4-check-sync-progress"><a class="header" href="#4-check-sync-progress">4. Check sync progress</a></h3>
-<p>In another terminal:</p>
-<p>./src/rewecoin-cli -testnet -datadir=$HOME/.rewetestnet getblockcount
-./src/rewecoin-cli -testnet -datadir=$HOME/.rewetestnet getpeerinfo</p>
-<p>The height should keep increasing until it catches up with the seed.</p>
-<h3 id="5-optional-mine-locally"><a class="header" href="#5-optional-mine-locally">5. (Optional) Mine locally</a></h3>
-<p>./src/rewecoin-cli -testnet -datadir=$HOME/.rewetestnet getnewaddress</p>
-<p>Add the generated address to zcash.conf:</p>
-<p>mineraddress=GENERATED_ADDRESS
+addnode=seed1.rewecoin.com:28233
+addnode=seed2.rewecoin.com:28233
+gen=0
+CONF
+
+./src/rewecoind -datadir=$HOME/.rewemainnet -conf=$HOME/.rewemainnet/rewecoin.conf -printtoconsole
+</code></pre>
+<p>rpcuser and rpcpassword are local, only for your own node. Do not reuse the example values.</p>
+<h2 id="verify-you-are-on-the-right-chain"><a class="header" href="#verify-you-are-on-the-right-chain">Verify you are on the right chain</a></h2>
+<pre><code>CLI="./src/rewecoin-cli -datadir=$HOME/.rewemainnet -conf=$HOME/.rewemainnet/rewecoin.conf"
+$CLI getblockhash 0
+$CLI getblockcount
+$CLI getpeerinfo
+</code></pre>
+<p><code>getblockhash 0</code> must return the genesis hash above. If it differs, you are not on this chain. <code>getblockcount</code> should keep increasing, and <code>getpeerinfo</code> should show at least one connection.</p>
+<h2 id="mining-optional"><a class="header" href="#mining-optional">Mining (optional)</a></h2>
+<p>Use a dedicated address, not an exchange or custodial address:</p>
+<pre><code>$CLI getnewaddress
+</code></pre>
+<p>Add to rewecoin.conf, then restart:</p>
+<pre><code>mineraddress=YOUR_ADDRESS
 gen=1
-genproclimit=1</p>
-<p>Restart the node.</p>
+genproclimit=1
+</code></pre>
+<p>Coinbase outputs need 100 blocks of maturity before they can be spent.</p>
 <h2 id="known-limitations"><a class="header" href="#known-limitations">Known limitations</a></h2>
 <ul>
-<li>All consensus upgrades (Overwinter, Sapling, Blossom, Heartwood, Canopy, NU5) are active from height 1. It is not possible to test the actual transition between them, only their combined behavior.</li>
-<li>Mined coinbase requires 100 blocks of maturity before it can be spent.</li>
-<li>The testnet runs on a single known seed node. Resilience to network partitioning has not been tested.</li>
+<li>Single-operator network, one effective seed host.</li>
+<li>Difficulty floor: start with CPU mining and expect fast, irregular blocks.</li>
+<li>All consensus upgrades are active from height 1, so upgrade transitions cannot be tested.</li>
 </ul>
-<h2 id="reporting-issues"><a class="header" href="#reporting-issues">Reporting issues</a></h2>
-<p>Open an issue on this repo, including relevant output from journalctl or -printtoconsole.</p>
+<h2 id="issues"><a class="header" href="#issues">Issues</a></h2>
+<p>Open an issue on this repo with relevant output from <code>-printtoconsole</code> or journalctl.</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="end-of-life"><a class="header" href="#end-of-life">End of Life</a></h1>
 <blockquote>
